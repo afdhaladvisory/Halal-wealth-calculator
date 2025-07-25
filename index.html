@@ -8,6 +8,7 @@
       font-family: Arial, sans-serif;
       background-color: #e7f0f5;
       padding: 2rem;
+      text-align: center;
     }
     .container {
       max-width: 600px;
@@ -16,7 +17,6 @@
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
     }
     form {
       display: flex;
@@ -28,7 +28,6 @@
       display: flex;
       justify-content: space-between;
       width: 100%;
-      align-items: center;
     }
     .form-row label {
       width: 50%;
@@ -40,6 +39,12 @@
       padding: 8px;
       text-align: center;
     }
+    .radio-row {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 0.5rem 0;
+    }
     button {
       background: green;
       color: white;
@@ -50,7 +55,10 @@
       width: 100%;
       cursor: pointer;
     }
-    h2 { color: green; }
+    h2 {
+      color: green;
+      text-align: center;
+    }
     img.logo {
       max-width: 150px;
       display: block;
@@ -61,17 +69,12 @@
       justify-content: space-between;
       margin: 5px 0;
     }
-    #results, #actionBox {
+    .hidden {
       display: none;
-    }
-    .radio-group {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
     }
     .action-box {
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 8px;
       padding: 1rem;
       margin-top: 1rem;
     }
@@ -84,26 +87,31 @@
     <form id="calcForm">
       <div class="form-row">
         <label>Growth Rate Projection:</label>
-        <div>8%</div>
+        <span>8%</span>
       </div>
       <div class="form-row">
         <label>Month & Year Born:</label>
-        <div>
+        <div style="width: 45%; display: flex; gap: 5px;">
           <select id="birthMonth">
-            <option value="0">Jan</option>
-            <option value="1">Feb</option>
-            <option value="2">Mar</option>
-            <option value="3">Apr</option>
-            <option value="4">May</option>
-            <option value="5">Jun</option>
-            <option value="6">Jul</option>
-            <option value="7">Aug</option>
-            <option value="8">Sep</option>
-            <option value="9">Oct</option>
-            <option value="10">Nov</option>
-            <option value="11">Dec</option>
+            <script>
+              const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+              months.forEach((m, i) => {
+                document.write(`<option value="${i+1}">${m}</option>`);
+              });
+            </script>
           </select>
           <select id="birthYear"></select>
+          <script>
+            const yearSelect = document.getElementById('birthYear');
+            const currentYear = new Date().getFullYear();
+            for(let y = currentYear - 80; y <= currentYear; y++) {
+              const opt = document.createElement('option');
+              opt.value = y;
+              opt.text = y;
+              if(y === 1995) opt.selected = true;
+              yearSelect.appendChild(opt);
+            }
+          </script>
         </div>
       </div>
       <div class="form-row">
@@ -119,13 +127,23 @@
         </select>
       </div>
       <div class="form-row">
+        <label>Investment Term (Years):</label>
+        <select id="investmentTerm">
+          <script>
+            for(let i = 5; i <= 20; i++) {
+              document.write(`<option value="${i}">${i}</option>`);
+            }
+          </script>
+        </select>
+      </div>
+      <div class="form-row">
         <label>How Much Do You Need? ($):</label>
         <input type="number" id="goal" value="1000000">
       </div>
       <button type="button" onclick="calculate()">Calculate</button>
     </form>
 
-    <div id="results">
+    <div id="results" class="hidden">
       <h3>Results</h3>
       <div class="result-row">Invest Monthly: <span id="monthly">$0.00</span></div>
       <div class="result-row">Total Amount Invested: <span id="invested">$0.00</span></div>
@@ -134,75 +152,58 @@
       <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
     </div>
 
-    <div id="actionBox" class="action-box">
+    <div class="action-box">
       <div class="form-row">
         <label>Are You Ready To Take Action Today?</label>
-        <div class="radio-group">
+        <div class="radio-row">
           <label><input type="radio" name="ready" value="yes"> Yes</label>
           <label><input type="radio" name="ready" value="no"> No</label>
         </div>
       </div>
       <div class="form-row">
         <label>Is Halal Returns Important To You?</label>
-        <div class="radio-group">
+        <div class="radio-row">
           <label><input type="radio" name="halal" value="yes"> Yes</label>
           <label><input type="radio" name="halal" value="no"> No</label>
         </div>
       </div>
-      <button id="adviseButton" disabled onclick="window.location.href='https://afdhaladvisory.com/contact/'">Seek Advise Today</button>
+      <button id="adviceBtn" onclick="window.location.href='https://afdhaladvisory.com/contact/'" disabled>Seek Advise Today</button>
     </div>
   </div>
 
   <script>
-    // Populate year dropdown
-    const birthYearSelect = document.getElementById('birthYear');
-    const currentYear = new Date().getFullYear();
-    for (let y = currentYear - 80; y <= currentYear; y++) {
-      const opt = document.createElement('option');
-      opt.value = y;
-      opt.text = y;
-      if (y === 1990) opt.selected = true;
-      birthYearSelect.appendChild(opt);
-    }
-
-    function formatCurrency(val) {
-      return "$" + parseFloat(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
     function calculate() {
-      const yearBorn = parseInt(document.getElementById("birthYear").value);
-      const age = currentYear - yearBorn;
-      const current = parseFloat(document.getElementById("current").value || 0);
-      const roi = 8 / 100 / 12;
-      const goal = parseFloat(document.getElementById("goal").value);
+      const birthYear = parseInt(document.getElementById("birthYear").value);
       const term = parseInt(document.getElementById("term").value);
-      const months = term * 12;
+      const investmentTerm = parseInt(document.getElementById("investmentTerm").value);
+      const goal = parseFloat(document.getElementById("goal").value);
+      const annualRate = 0.08;
+      const monthlyRate = annualRate / 12;
+      const months = investmentTerm * 12;
 
-      const FV_current = current * Math.pow(1 + roi, months);
-      const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
-
+      const PMT = goal * monthlyRate / (Math.pow(1 + monthlyRate, months) - 1);
       const totalInvested = PMT * months;
-      const finalValue = FV_current + totalInvested * (((Math.pow(1 + roi, months)) - 1) / roi);
-      const profitEarned = finalValue - totalInvested - current;
-      const withdrawalAge = age + term + 1;
+      const finalValue = totalInvested * Math.pow(1 + annualRate, investmentTerm);
+      const profitEarned = finalValue - totalInvested;
+      const withdrawalAge = new Date().getFullYear() - birthYear + investmentTerm + 1;
 
-      document.getElementById("monthly").innerText = formatCurrency(PMT);
-      document.getElementById("invested").innerText = formatCurrency(totalInvested);
-      document.getElementById("interest").innerText = formatCurrency(profitEarned);
-      document.getElementById("final").innerText = formatCurrency(finalValue);
+      document.getElementById("monthly").innerText = "$" + PMT.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      document.getElementById("invested").innerText = "$" + totalInvested.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      document.getElementById("interest").innerText = "$" + profitEarned.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      document.getElementById("final").innerText = "$" + finalValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       document.getElementById("withdrawal").innerText = withdrawalAge;
 
-      document.getElementById("results").style.display = 'block';
-      document.getElementById("actionBox").style.display = 'block';
+      document.getElementById("results").classList.remove("hidden");
     }
 
-    const radios = document.querySelectorAll('input[type=radio]');
-    radios.forEach(r => r.addEventListener('change', () => {
-      const ready = document.querySelector('input[name=ready]:checked');
-      const halal = document.querySelector('input[name=halal]:checked');
-      const button = document.getElementById('adviseButton');
-      button.disabled = !(ready?.value === 'yes' && halal?.value === 'yes');
-    }));
+    document.querySelectorAll("input[name='ready'], input[name='halal']").forEach(el => {
+      el.addEventListener('change', () => {
+        const ready = document.querySelector("input[name='ready']:checked")?.value;
+        const halal = document.querySelector("input[name='halal']:checked")?.value;
+        const btn = document.getElementById("adviceBtn");
+        btn.disabled = !(ready === 'yes' && halal === 'yes');
+      });
+    });
   </script>
 </body>
 </html>
