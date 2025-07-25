@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <title>Investment Goal Calculator</title>
@@ -80,22 +81,16 @@
       <div class="form-row">
         <label>How Long Can You Put Aside This Savings?</label>
         <select id="term">
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-          <option value="13">13</option>
-          <option value="14">14</option>
-          <option value="15" selected>15</option>
-          <option value="16">16</option>
-          <option value="17">17</option>
-          <option value="18">18</option>
-          <option value="19">19</option>
-          <option value="20">20</option>
+          <script>
+            const termSelect = document.getElementById('term');
+            for (let i = 5; i <= 20; i++) {
+              const opt = document.createElement('option');
+              opt.value = i;
+              opt.text = i;
+              if(i === 15) opt.selected = true;
+              termSelect.appendChild(opt);
+            }
+          </script>
         </select>
       </div>
       <div class="form-row">
@@ -105,15 +100,15 @@
       <div class="form-row">
         <label>Are You Ready To Take Action Today?</label>
         <div>
-          <label><input type="radio" name="ready" value="yes"> Yes</label>
-          <label><input type="radio" name="ready" value="no"> No</label>
+          <input type="radio" name="ready" value="Yes"> Yes
+          <input type="radio" name="ready" value="No"> No
         </div>
       </div>
       <div class="form-row">
         <label>Is Halal Returns Important To You?</label>
         <div>
-          <label><input type="radio" name="halal" value="yes"> Yes</label>
-          <label><input type="radio" name="halal" value="no"> No</label>
+          <input type="radio" name="halal" value="Yes"> Yes
+          <input type="radio" name="halal" value="No"> No
         </div>
       </div>
       <button type="button" onclick="calculate()">Calculate</button>
@@ -132,33 +127,28 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    function formatMoney(value) {
-      return "$" + Number(value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    function formatCurrency(value) {
+      return "$" + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function calculate() {
-      const yearBornInput = document.getElementById("yearBorn").value;
-      const yearBorn = new Date(yearBornInput).getFullYear();
-      const age = new Date().getFullYear() - yearBorn;
-      const current = parseFloat(document.getElementById("current").value || 0);
-      const roiAnnual = 8 / 100;
-      const roiMonthly = roiAnnual / 12;
+      const birthDate = new Date(document.getElementById("yearBorn").value);
+      const age = new Date().getFullYear() - birthDate.getFullYear();
+      const roi = 8 / 100 / 12;
       const goal = parseFloat(document.getElementById("goal").value);
       const term = parseInt(document.getElementById("term").value);
       const months = term * 12;
 
-      const FV_current = current * Math.pow(1 + roiMonthly, months);
-      const PMT = (goal - FV_current) * roiMonthly / (Math.pow(1 + roiMonthly, months) - 1);
-
-      const totalInvested = PMT * term * 12;
-      const futureValue = totalInvested * Math.pow(1 + roiAnnual, term);
+      const PMT = goal * roi / (Math.pow(1 + roi, months) - 1);
+      const totalInvested = PMT * months;
+      const futureValue = goal;
       const profitEarned = futureValue - totalInvested;
-      const withdrawalAge = age + term + 1;
+      const withdrawalAge = age + term;
 
-      document.getElementById("monthly").innerText = formatMoney(PMT > 0 ? PMT : 0);
-      document.getElementById("invested").innerText = formatMoney(totalInvested);
-      document.getElementById("interest").innerText = formatMoney(profitEarned);
-      document.getElementById("final").innerText = formatMoney(futureValue);
+      document.getElementById("monthly").innerText = formatCurrency(PMT);
+      document.getElementById("invested").innerText = formatCurrency(totalInvested);
+      document.getElementById("interest").innerText = formatCurrency(profitEarned);
+      document.getElementById("final").innerText = formatCurrency(futureValue);
       document.getElementById("withdrawal").innerText = withdrawalAge;
     }
   </script>
