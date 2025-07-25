@@ -21,11 +21,6 @@
       color: green;
       text-align: center;
     }
-    img.logo {
-      max-width: 150px;
-      display: block;
-      margin: 0 auto 20px;
-    }
     form {
       display: flex;
       flex-direction: column;
@@ -34,12 +29,13 @@
     }
     .form-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
       width: 100%;
+      max-width: 500px;
     }
     .form-row label {
       width: 50%;
+      text-align: left;
     }
     .form-row input,
     .form-row select {
@@ -49,12 +45,7 @@
     }
     .radio-row {
       display: flex;
-      justify-content: space-around;
-      width: 100%;
-    }
-    .radio-group {
-      display: flex;
-      align-items: center;
+      justify-content: center;
       gap: 10px;
     }
     button {
@@ -67,71 +58,59 @@
       width: 100%;
       cursor: pointer;
     }
-    .results {
-      display: none;
-      margin-top: 20px;
-    }
     .result-row {
       display: flex;
       justify-content: space-between;
       margin: 5px 0;
     }
+    .hidden {
+      display: none;
+    }
+    .action-box {
+      margin-top: 20px;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="logo.png" alt="Logo" class="logo">
     <h2>Investment Goal Calculator</h2>
     <form id="calcForm">
       <div class="form-row">
-        <label>Rate Of Growth For Projection:</label>
-        <input type="number" value="8" disabled>
+        <label>Growth Rate Projection:</label>
+        <div style="width: 45%; text-align: center;">8%</div>
       </div>
       <div class="form-row">
-        <label>Year Born:</label>
-        <select id="monthBorn">
-          <option value="0">January</option>
-          <option value="1">February</option>
-          <option value="2">March</option>
-          <option value="3">April</option>
-          <option value="4">May</option>
-          <option value="5">June</option>
-          <option value="6">July</option>
-          <option value="7">August</option>
-          <option value="8">September</option>
-          <option value="9">October</option>
-          <option value="10">November</option>
-          <option value="11">December</option>
-        </select>
-        <select id="yearBorn"></select>
+        <label>Month & Year Born:</label>
+        <div style="display:flex; gap: 5px; width: 45%;">
+          <select id="birthMonth">
+            <option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option>
+            <option>May</option><option>Jun</option><option>Jul</option><option>Aug</option>
+            <option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option>
+          </select>
+          <select id="birthYear"></select>
+        </div>
       </div>
       <div class="form-row">
         <label>Spare/Idle Cash ($):</label>
         <input type="number" id="current" value="16000">
       </div>
       <div class="form-row">
-        <label>How Long Can You Put Aside This Savings?</label>
+        <label>Expected Funding Period:</label>
         <select id="term">
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-          <option value="13">13</option>
-          <option value="14">14</option>
-          <option value="15">15</option>
-          <option value="16">16</option>
-          <option value="17">17</option>
-          <option value="18">18</option>
-          <option value="19">19</option>
+          <option value="5">5</option><option value="6">6</option><option value="7">7</option>
+          <option value="8">8</option><option value="9">9</option><option value="10">10</option>
+          <option value="11">11</option><option value="12">12</option><option value="13">13</option>
+          <option value="14">14</option><option value="15">15</option><option value="16">16</option>
+          <option value="17">17</option><option value="18">18</option><option value="19">19</option>
           <option value="20">20</option>
         </select>
       </div>
       <div class="form-row">
-        <label>Investment Period:</label>
+        <label>Investment Period (Years):</label>
         <select id="period">
           <option value="10">10</option>
           <option value="15">15</option>
@@ -145,75 +124,84 @@
       <button type="button" onclick="calculate()">Calculate</button>
     </form>
 
-    <div class="results" id="results">
+    <div id="results" class="hidden">
       <h3>Results</h3>
       <div class="result-row">Invest Monthly: <span id="monthly">$0.00</span></div>
       <div class="result-row">Total Amount Invested: <span id="invested">$0.00</span></div>
       <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
       <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
       <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
+    </div>
 
+    <div id="actionBox" class="action-box hidden">
       <div class="form-row">
         <label>Are You Ready To Take Action Today?</label>
         <div class="radio-row">
-          <label class="radio-group"><input type="radio" name="ready" value="yes"> Yes</label>
-          <label class="radio-group"><input type="radio" name="ready" value="no"> No</label>
+          <label><input type="radio" name="ready" value="yes"> Yes</label>
+          <label><input type="radio" name="ready" value="no"> No</label>
         </div>
       </div>
       <div class="form-row">
         <label>Is Halal Returns Important To You?</label>
         <div class="radio-row">
-          <label class="radio-group"><input type="radio" name="halal" value="yes"> Yes</label>
-          <label class="radio-group"><input type="radio" name="halal" value="no"> No</label>
+          <label><input type="radio" name="halal" value="yes"> Yes</label>
+          <label><input type="radio" name="halal" value="no"> No</label>
         </div>
       </div>
-
-      <button onclick="window.location.href='https://afdhaladvisory.com/contact/'">Seek Advise Here</button>
+      <button id="adviseBtn" disabled onclick="window.location.href='https://afdhaladvisory.com/contact/'">Seek Advise Today</button>
     </div>
   </div>
 
   <script>
-    const yearSelect = document.getElementById('yearBorn');
+    const birthYearSelect = document.getElementById('birthYear');
     const currentYear = new Date().getFullYear();
-    for(let y = currentYear - 80; y <= currentYear; y++) {
+    for (let y = currentYear - 80; y <= currentYear; y++) {
       const opt = document.createElement('option');
       opt.value = y;
       opt.text = y;
-      if(y === 1995) opt.selected = true;
-      yearSelect.appendChild(opt);
+      if (y === 1995) opt.selected = true;
+      birthYearSelect.appendChild(opt);
     }
 
-    function formatMoney(n) {
-      return "$" + Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    function formatCurrency(value) {
+      return "$" + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function calculate() {
-      const monthBorn = parseInt(document.getElementById("monthBorn").value);
-      const yearBorn = parseInt(document.getElementById("yearBorn").value);
-      const birthDate = new Date(yearBorn, monthBorn, 1);
-      const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
-
-      const current = parseFloat(document.getElementById("current").value || 0);
-      const goal = parseFloat(document.getElementById("goal").value);
+      const yearBorn = parseInt(document.getElementById("birthYear").value);
+      const term = parseInt(document.getElementById("term").value);
       const period = parseInt(document.getElementById("period").value);
+      const goal = parseFloat(document.getElementById("goal").value);
+      const current = parseFloat(document.getElementById("current").value);
+
+      const roi = 0.08 / 12;
       const months = period * 12;
-      const roi = 8 / 100 / 12;
 
       const FV_current = current * Math.pow(1 + roi, months);
       const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
-      const totalInvested = PMT * months;
-      const profitEarned = goal - totalInvested - current;
-      const withdrawalAge = age + period + 1;
 
-      document.getElementById("monthly").innerText = formatMoney(PMT > 0 ? PMT : 0);
-      document.getElementById("invested").innerText = formatMoney(totalInvested);
-      document.getElementById("interest").innerText = formatMoney(profitEarned);
-      document.getElementById("final").innerText = formatMoney(goal);
+      const totalInvested = PMT * months;
+      const futureValue = FV_current + totalInvested * (((Math.pow(1 + roi, months)) - 1) / roi);
+      const profitEarned = futureValue - totalInvested - current;
+      const withdrawalAge = (currentYear - yearBorn) + period + 1;
+
+      document.getElementById("monthly").innerText = formatCurrency(PMT > 0 ? PMT : 0);
+      document.getElementById("invested").innerText = formatCurrency(totalInvested);
+      document.getElementById("interest").innerText = formatCurrency(profitEarned);
+      document.getElementById("final").innerText = formatCurrency(futureValue);
       document.getElementById("withdrawal").innerText = withdrawalAge;
 
-      document.getElementById("results").style.display = 'block';
+      document.getElementById("results").classList.remove("hidden");
+      document.getElementById("actionBox").classList.remove("hidden");
     }
+
+    document.querySelectorAll('input[name="ready"], input[name="halal"]').forEach(el => {
+      el.addEventListener('change', () => {
+        const readyYes = document.querySelector('input[name="ready"]:checked')?.value === 'yes';
+        const halalYes = document.querySelector('input[name="halal"]:checked')?.value === 'yes';
+        document.getElementById("adviseBtn").disabled = !(readyYes && halalYes);
+      });
+    });
   </script>
 </body>
 </html>
