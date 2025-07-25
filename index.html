@@ -1,145 +1,170 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Retirement Savings Calculator</title>
+  <title>Retirement Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 20px;
+      background-color: #e7f0f5;
+      padding: 2rem;
     }
-    .calculator {
-      max-width: 400px;
+    .container {
+      max-width: 600px;
       margin: auto;
-      background: #fff;
-      padding: 20px;
+      background: #ffffff;
+      padding: 2rem;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
-    input {
+    input, select {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    .output {
-      margin-top: 20px;
-      padding-top: 10px;
-      border-top: 1px solid #ccc;
-    }
-    .output label {
-      font-weight: normal;
-      display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
-    }
-    .buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: space-between;
-      margin-top: 20px;
+      padding: 10px;
+      margin: 10px 0;
     }
     button {
-      flex: 1 1 calc(50% - 10px);
-      background-color: #28a745;
+      background: green;
       color: white;
-      border: none;
-      border-radius: 5px;
       padding: 10px;
-      font-size: 16px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 4px;
+      width: 100%;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #218838;
+    h2 { color: green; }
+    img.logo {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
-  <div class="calculator">
-    <h2>Retirement Savings Calculator</h2>
+  <div class="container">
+    <img src="logo.png" alt="Logo" class="logo">
+    <h2>Plan Your Retirement</h2>
     <form id="calcForm">
-      <label>Your Current Age:
-        <input type="number" id="age" value="28">
-      </label>
-      <label>Planned Retirement Age:
-        <input type="number" id="retireAge" value="62">
-      </label>
-      <label>Current Retirement Savings:
-        <input type="number" id="current" value="16000">
-      </label>
-      <label>Average Annual ROI:
-        <input type="number" step="0.0001" id="roi" value="5.5">
-      </label>
-      <label>Retirement Saving Goals:
-        <input type="number" id="goal" value="1000000">
-      </label>
+      Current Age: <input type="number" id="age" placeholder="e.g. 28">
+      Current Savings ($): <input type="number" id="current" value="16000">
+      Annual ROI (%): <input type="number" id="roi" step="0.01" value="5.5">
+      Retirement Goal ($): <input type="number" id="goal" value="1000000">
+      Investment Term (years):
+      <select id="term">
+        <option value="10">10</option>
+        <option value="13">13</option>
+        <option value="15" selected>15</option>
+        <option value="20">20</option>
+      </select>
+      <button type="button" onclick="calculate()">Calculate</button>
     </form>
 
-    <div class="output">
-      <label>Monthly Investment Required: <span id="monthly">$0.00</span></label>
-      <label>Number of Contributions: <span id="contrib">0</span></label>
-      <label>Total Amount Invested: <span id="invested">$0.00</span></label>
-      <label>Interest Earned: <span id="interest">$0.00</span></label>
-      <label>Estimated Final Value: <span id="final">$0.00</span></label>
-      <label>Last Deposit Date: <span id="lastDate">-</span></label>
-    </div>
+    <h3>Results</h3>
+    <div class="result-row">Monthly Investment Required: <span id="monthly">$0.00</span></div>
+    <div class="result-row">Number of Contributions: <span id="contrib">0</span></div>
+    <div class="result-row">Total Amount Invested: <span id="invested">$0.00</span></div>
+    <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
+    <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
+    <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
 
-    <div class="buttons">
-      <button type="button" onclick="calculate()">Calc</button>
-      <button type="reset" onclick="document.getElementById('calcForm').reset();">Clear</button>
-      <button type="button" onclick="exportCSV()">Savings Schedule</button>
-      <button type="button" onclick="showChart()">Charts</button>
-    </div>
+    <button onclick="exportCSV()">Download CSV</button>
+    <button onclick="showChart()">Show Growth Chart</button>
+    <canvas id="chart" width="500" height="300" style="margin-top: 20px; display:none;"></canvas>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     function calculate() {
-      const age = parseInt(document.getElementById("age").value);
-      const retireAge = parseInt(document.getElementById("retireAge").value);
-      const current = parseFloat(document.getElementById("current").value);
+      const age = parseInt(document.getElementById("age").value || 0);
+      const current = parseFloat(document.getElementById("current").value || 0);
       const roi = parseFloat(document.getElementById("roi").value) / 100 / 12;
       const goal = parseFloat(document.getElementById("goal").value);
-      const months = (retireAge - age) * 12;
+      const term = parseInt(document.getElementById("term").value);
+      const months = term * 12;
 
       const FV_current = current * Math.pow(1 + roi, months);
       const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
 
       const totalInvested = PMT * months;
-      const futureValue = FV_current + PMT * ((Math.pow(1 + roi, months) - 1) / roi);
-      const interestEarned = futureValue - totalInvested - current;
+      const futureValue = FV_current + totalInvested * (((Math.pow(1 + roi, months)) - 1) / roi);
+      const profitEarned = futureValue - totalInvested - current;
+      const withdrawalAge = age + term + 1;
 
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + months);
-
-      document.getElementById("monthly").innerText = "$" + PMT.toFixed(2);
+      document.getElementById("monthly").innerText = "$" + (PMT > 0 ? PMT.toFixed(2) : "0.00");
       document.getElementById("contrib").innerText = months;
       document.getElementById("invested").innerText = "$" + totalInvested.toFixed(2);
-      document.getElementById("interest").innerText = "$" + interestEarned.toFixed(2);
+      document.getElementById("interest").innerText = "$" + profitEarned.toFixed(2);
       document.getElementById("final").innerText = "$" + futureValue.toFixed(2);
-      document.getElementById("lastDate").innerText = endDate.toISOString().split('T')[0];
+      document.getElementById("withdrawal").innerText = withdrawalAge;
+
+      window.calcData = {
+        monthly: PMT,
+        contributions: months,
+        invested: totalInvested,
+        profit: profitEarned,
+        final: futureValue,
+        withdrawal: withdrawalAge
+      };
     }
 
     function exportCSV() {
-      alert('CSV Export triggered');
+      const d = window.calcData || {};
+      const csv = `Field,Value
+Monthly Investment Required,${d.monthly?.toFixed(2)}
+Number of Contributions,${d.contributions}
+Total Amount Invested,${d.invested?.toFixed(2)}
+Profit Earned,${d.profit?.toFixed(2)}
+Estimated Final Value,${d.final?.toFixed(2)}
+Withdrawal Age,${d.withdrawal}`;
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "retirement_results.csv";
+      link.click();
     }
 
     function showChart() {
-      alert('Show Chart triggered');
+      const ctx = document.getElementById("chart").getContext("2d");
+      document.getElementById("chart").style.display = 'block';
+      const d = window.calcData || {};
+      const months = d.contributions || 0;
+      const monthly = d.monthly || 0;
+      const roi = parseFloat(document.getElementById("roi").value) / 100 / 12;
+      let balance = parseFloat(document.getElementById("current").value || 0);
+
+      const data = [];
+      for (let i = 0; i <= months; i++) {
+        data.push(balance.toFixed(2));
+        balance = balance * (1 + roi) + monthly;
+      }
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: months + 1 }, (_, i) => i),
+          datasets: [{
+            label: 'Projected Growth ($)',
+            data: data,
+            borderColor: 'green',
+            backgroundColor: 'rgba(0,128,0,0.1)',
+            tension: 0.1,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Month' } },
+            y: { title: { display: true, text: 'Value ($)' }, beginAtZero: true }
+          }
+        }
+      });
     }
   </script>
 </body>
