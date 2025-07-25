@@ -58,7 +58,6 @@
     h2 { color: green; }
     img.logo {
       width: 100%;
-      height: auto;
       display: block;
       margin: 0 auto 20px;
     }
@@ -102,18 +101,18 @@
       <div class="form-row">
         <label>Expected Funding Period (Years):</label>
         <select id="fundingPeriod">
-          <option value="10">10</option>
-          <option value="15">15</option>
-          <option value="20">20</option>
+          <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+          <option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          <option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option>
+          <option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
         </select>
       </div>
       <div class="form-row">
         <label>Investment Term (Years):</label>
         <select id="term">
-          <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
-          <option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
-          <option value="13">13</option><option value="14">14</option><option value="15" selected>15</option><option value="16">16</option>
-          <option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
+          <option value="10">10</option>
+          <option value="15" selected>15</option>
+          <option value="20">20</option>
         </select>
       </div>
       <div class="form-row">
@@ -181,6 +180,7 @@
       const birthMonth = parseInt(document.getElementById("birthMonth").value);
       const goal = parseFloat(document.getElementById("goal").value);
       const fundingPeriod = parseInt(document.getElementById("fundingPeriod").value);
+      const term = parseInt(document.getElementById("term").value);
       const current = parseFloat(document.getElementById("current").value || 0);
       const roi = 0.08 / 12;
       const months = fundingPeriod * 12;
@@ -197,7 +197,7 @@
       let age = today.getFullYear() - birthDate.getFullYear();
       if (today.getMonth() < birthDate.getMonth()) age--;
 
-      const withdrawalAge = age + fundingPeriod + 1;
+      const withdrawalAge = age + term + 1;
 
       document.getElementById("monthly").innerText = formatCurrency(PMT);
       document.getElementById("invested").innerText = formatCurrency(totalInvested);
