@@ -32,7 +32,7 @@
     }
     .form-row input,
     .form-row select {
-      width: 45%;
+      width: 50%;
       padding: 8px;
     }
     button {
@@ -64,41 +64,55 @@
     <h2>Investment Goal Calculator</h2>
     <form id="calcForm">
       <div class="form-row">
-        <label>Rate of Growth for Projection:</label>
+        <label>Rate Of Growth For Projection:</label>
         <input type="number" value="6" disabled>
       </div>
       <div class="form-row">
-        <label>Year Born:</label>
-        <select id="yearBorn">
-          <script>
-            const yearSelect = document.getElementById('yearBorn');
-            const currentYear = new Date().getFullYear();
-            for(let y = currentYear - 80; y <= currentYear; y++) {
-              const opt = document.createElement('option');
-              opt.value = y;
-              opt.text = y;
-              if(y === 1995) opt.selected = true;
-              yearSelect.appendChild(opt);
-            }
-          </script>
-        </select>
+        <label>Date Of Birth:</label>
+        <input type="date" id="dob">
       </div>
       <div class="form-row">
         <label>Spare/Idle Cash ($):</label>
         <input type="number" id="current" value="16000">
       </div>
       <div class="form-row">
-        <label>How long can you put aside this savings?</label>
+        <label>How Long Can You Put Aside This Savings?</label>
         <select id="term">
           <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
           <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
           <option value="15" selected>15</option>
+          <option value="16">16</option>
+          <option value="17">17</option>
+          <option value="18">18</option>
+          <option value="19">19</option>
           <option value="20">20</option>
         </select>
       </div>
       <div class="form-row">
-        <label>How much do you need? ($):</label>
+        <label>How Much Do You Need? ($):</label>
         <input type="number" id="goal" value="1000000">
+      </div>
+      <div class="form-row">
+        <label>Are You Ready To Take Action Today?</label>
+        <div>
+          <input type="radio" id="readyYes" name="ready" value="Yes"> Yes
+          <input type="radio" id="readyNo" name="ready" value="No"> No
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Is Halal Returns Important To You?</label>
+        <div>
+          <input type="radio" id="halalYes" name="halal" value="Yes"> Yes
+          <input type="radio" id="halalNo" name="halal" value="No"> No
+        </div>
       </div>
       <button type="button" onclick="calculate()">Calculate</button>
     </form>
@@ -110,15 +124,25 @@
     <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
     <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
 
-    <button onclick="window.location.href='https://afdhaladvisory.com/contact/'">Seek advise here</button>
+    <button onclick="window.location.href='https://afdhaladvisory.com/contact/'">Seek Advise Here</button>
     <canvas id="chart" width="500" height="300" style="margin-top: 20px; display:none;"></canvas>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    function formatCurrency(amount) {
+      return "$" + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     function calculate() {
-      const yearBorn = parseInt(document.getElementById("yearBorn").value);
-      const age = new Date().getFullYear() - yearBorn;
+      const dob = new Date(document.getElementById("dob").value);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+
       const current = parseFloat(document.getElementById("current").value || 0);
       const roi = 6 / 100 / 12;
       const goal = parseFloat(document.getElementById("goal").value);
@@ -133,10 +157,10 @@
       const profitEarned = futureValue - totalInvested - current;
       const withdrawalAge = age + term + 1;
 
-      document.getElementById("monthly").innerText = "$" + (PMT > 0 ? PMT.toFixed(2) : "0.00");
-      document.getElementById("invested").innerText = "$" + totalInvested.toFixed(2);
-      document.getElementById("interest").innerText = "$" + profitEarned.toFixed(2);
-      document.getElementById("final").innerText = "$" + futureValue.toFixed(2);
+      document.getElementById("monthly").innerText = formatCurrency(PMT > 0 ? PMT : 0);
+      document.getElementById("invested").innerText = formatCurrency(totalInvested);
+      document.getElementById("interest").innerText = formatCurrency(profitEarned);
+      document.getElementById("final").innerText = formatCurrency(futureValue);
       document.getElementById("withdrawal").innerText = withdrawalAge;
 
       window.calcData = {
