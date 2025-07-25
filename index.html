@@ -4,20 +4,54 @@
   <title>Retirement Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; background: #f9f9f9; }
-    .container { max-width: 500px; margin: auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    input, select { width: 100%; padding: 10px; margin: 10px 0; }
-    button { background: green; color: white; padding: 10px; width: 100%; border: none; border-radius: 4px; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e7f0f5;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    button {
+      background: green;
+      color: white;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 4px;
+      width: 100%;
+      cursor: pointer;
+    }
     h2 { color: green; }
+    img.logo {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <img src="logo.png" alt="Logo" class="logo">
     <h2>Plan Your Retirement</h2>
-    <p>Fill in your details to find out how much you need to save monthly.</p>
     <form id="calcForm">
       Current Age: <input type="number" id="age" placeholder="e.g. 28">
-      Current Savings ($): <input type="number" id="current" placeholder="e.g. 16000">
+      Current Savings ($): <input type="number" id="current" value="16000">
       Annual ROI (%): <input type="number" id="roi" step="0.01" value="5.5">
       Retirement Goal ($): <input type="number" id="goal" value="1000000">
       Investment Term (years):
@@ -31,20 +65,106 @@
     </form>
 
     <h3>Results</h3>
-    <p>Monthly Investment Required: <strong>$<span id="monthly">0.00</span></strong></p>
+    <div class="result-row">Monthly Investment Required: <span id="monthly">$0.00</span></div>
+    <div class="result-row">Number of Contributions: <span id="contrib">0</span></div>
+    <div class="result-row">Total Amount Invested: <span id="invested">$0.00</span></div>
+    <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
+    <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
+    <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
+
+    <button onclick="exportCSV()">Download CSV</button>
+    <button onclick="showChart()">Show Growth Chart</button>
+    <canvas id="chart" width="500" height="300" style="margin-top: 20px; display:none;"></canvas>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     function calculate() {
+      const age = parseInt(document.getElementById("age").value || 0);
       const current = parseFloat(document.getElementById("current").value || 0);
       const roi = parseFloat(document.getElementById("roi").value) / 100 / 12;
       const goal = parseFloat(document.getElementById("goal").value);
-      const months = parseInt(document.getElementById("term").value) * 12;
+      const term = parseInt(document.getElementById("term").value);
+      const months = term * 12;
 
-      const futureValueCurrent = current * Math.pow(1 + roi, months);
-      const PMT = (goal - futureValueCurrent) * roi / (Math.pow(1 + roi, months) - 1);
+      const FV_current = current * Math.pow(1 + roi, months);
+      const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
 
-      document.getElementById("monthly").innerText = PMT > 0 ? PMT.toFixed(2) : "0.00";
+      const totalInvested = PMT * months;
+      const futureValue = FV_current + totalInvested * (((Math.pow(1 + roi, months)) - 1) / roi);
+      const profitEarned = futureValue - totalInvested - current;
+      const withdrawalAge = age + term + 1;
+
+      document.getElementById("monthly").innerText = "$" + (PMT > 0 ? PMT.toFixed(2) : "0.00");
+      document.getElementById("contrib").innerText = months;
+      document.getElementById("invested").innerText = "$" + totalInvested.toFixed(2);
+      document.getElementById("interest").innerText = "$" + profitEarned.toFixed(2);
+      document.getElementById("final").innerText = "$" + futureValue.toFixed(2);
+      document.getElementById("withdrawal").innerText = withdrawalAge;
+
+      window.calcData = {
+        monthly: PMT,
+        contributions: months,
+        invested: totalInvested,
+        profit: profitEarned,
+        final: futureValue,
+        withdrawal: withdrawalAge
+      };
+    }
+
+    function exportCSV() {
+      const d = window.calcData || {};
+      const csv = `Field,Value
+Monthly Investment Required,${d.monthly?.toFixed(2)}
+Number of Contributions,${d.contributions}
+Total Amount Invested,${d.invested?.toFixed(2)}
+Profit Earned,${d.profit?.toFixed(2)}
+Estimated Final Value,${d.final?.toFixed(2)}
+Withdrawal Age,${d.withdrawal}`;
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "retirement_results.csv";
+      link.click();
+    }
+
+    function showChart() {
+      const ctx = document.getElementById("chart").getContext("2d");
+      document.getElementById("chart").style.display = 'block';
+      const d = window.calcData || {};
+      const months = d.contributions || 0;
+      const monthly = d.monthly || 0;
+      const roi = parseFloat(document.getElementById("roi").value) / 100 / 12;
+      let balance = parseFloat(document.getElementById("current").value || 0);
+
+      const data = [];
+      for (let i = 0; i <= months; i++) {
+        data.push(balance.toFixed(2));
+        balance = balance * (1 + roi) + monthly;
+      }
+
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: months + 1 }, (_, i) => i),
+          datasets: [{
+            label: 'Projected Growth ($)',
+            data: data,
+            borderColor: 'green',
+            backgroundColor: 'rgba(0,128,0,0.1)',
+            tension: 0.1,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Month' } },
+            y: { title: { display: true, text: 'Value ($)' }, beginAtZero: true }
+          }
+        }
+      });
     }
   </script>
 </body>
