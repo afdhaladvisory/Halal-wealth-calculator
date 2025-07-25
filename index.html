@@ -17,15 +17,26 @@
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+    h2 {
+      color: green;
+      text-align: center;
+    }
+    img.logo {
+      max-width: 150px;
+      display: block;
+      margin: 0 auto 20px;
+    }
     form {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      align-items: center;
     }
     .form-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      width: 100%;
     }
     .form-row label {
       width: 50%;
@@ -34,6 +45,17 @@
     .form-row select {
       width: 45%;
       padding: 8px;
+      text-align: center;
+    }
+    .radio-row {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+    }
+    .radio-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     button {
       background: green;
@@ -45,14 +67,9 @@
       width: 100%;
       cursor: pointer;
     }
-    h2 {
-      color: green;
-      text-align: center;
-    }
-    img.logo {
-      max-width: 150px;
-      display: block;
-      margin: 0 auto 20px;
+    .results {
+      display: none;
+      margin-top: 20px;
     }
     .result-row {
       display: flex;
@@ -72,23 +89,21 @@
       </div>
       <div class="form-row">
         <label>Year Born:</label>
-        <div style="width: 45%; display: flex; gap: 5px;">
-          <select id="birthMonth">
-            <option value="0">January</option>
-            <option value="1">February</option>
-            <option value="2">March</option>
-            <option value="3">April</option>
-            <option value="4">May</option>
-            <option value="5">June</option>
-            <option value="6">July</option>
-            <option value="7">August</option>
-            <option value="8">September</option>
-            <option value="9">October</option>
-            <option value="10">November</option>
-            <option value="11">December</option>
-          </select>
-          <select id="birthYear"></select>
-        </div>
+        <select id="monthBorn">
+          <option value="0">January</option>
+          <option value="1">February</option>
+          <option value="2">March</option>
+          <option value="3">April</option>
+          <option value="4">May</option>
+          <option value="5">June</option>
+          <option value="6">July</option>
+          <option value="7">August</option>
+          <option value="8">September</option>
+          <option value="9">October</option>
+          <option value="10">November</option>
+          <option value="11">December</option>
+        </select>
+        <select id="yearBorn"></select>
       </div>
       <div class="form-row">
         <label>Spare/Idle Cash ($):</label>
@@ -117,7 +132,7 @@
       </div>
       <div class="form-row">
         <label>Investment Period:</label>
-        <select id="investmentPeriod">
+        <select id="period">
           <option value="10">10</option>
           <option value="15">15</option>
           <option value="20">20</option>
@@ -127,75 +142,77 @@
         <label>How Much Do You Need? ($):</label>
         <input type="number" id="goal" value="1000000">
       </div>
+      <button type="button" onclick="calculate()">Calculate</button>
+    </form>
+
+    <div class="results" id="results">
+      <h3>Results</h3>
+      <div class="result-row">Invest Monthly: <span id="monthly">$0.00</span></div>
+      <div class="result-row">Total Amount Invested: <span id="invested">$0.00</span></div>
+      <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
+      <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
+      <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
+
       <div class="form-row">
         <label>Are You Ready To Take Action Today?</label>
-        <div style="width: 45%;">
-          <label><input type="radio" name="actionReady" value="yes"> Yes</label>
-          <label><input type="radio" name="actionReady" value="no"> No</label>
+        <div class="radio-row">
+          <label class="radio-group"><input type="radio" name="ready" value="yes"> Yes</label>
+          <label class="radio-group"><input type="radio" name="ready" value="no"> No</label>
         </div>
       </div>
       <div class="form-row">
         <label>Is Halal Returns Important To You?</label>
-        <div style="width: 45%;">
-          <label><input type="radio" name="halalImportant" value="yes"> Yes</label>
-          <label><input type="radio" name="halalImportant" value="no"> No</label>
+        <div class="radio-row">
+          <label class="radio-group"><input type="radio" name="halal" value="yes"> Yes</label>
+          <label class="radio-group"><input type="radio" name="halal" value="no"> No</label>
         </div>
       </div>
-      <button type="button" onclick="calculate()">Calculate</button>
-    </form>
 
-    <h3>Results</h3>
-    <div class="result-row">Invest Monthly: <span id="monthly">$0.00</span></div>
-    <div class="result-row">Total Amount Invested: <span id="invested">$0.00</span></div>
-    <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
-    <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
-    <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
-
-    <button onclick="window.location.href='https://afdhaladvisory.com/contact/'">Seek Advise Here</button>
-    <canvas id="chart" width="500" height="300" style="margin-top: 20px; display:none;"></canvas>
+      <button onclick="window.location.href='https://afdhaladvisory.com/contact/'">Seek Advise Here</button>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const birthYearSelect = document.getElementById("birthYear");
+    const yearSelect = document.getElementById('yearBorn');
     const currentYear = new Date().getFullYear();
-    for (let y = currentYear - 80; y <= currentYear; y++) {
-      const opt = document.createElement("option");
+    for(let y = currentYear - 80; y <= currentYear; y++) {
+      const opt = document.createElement('option');
       opt.value = y;
       opt.text = y;
-      birthYearSelect.appendChild(opt);
+      if(y === 1995) opt.selected = true;
+      yearSelect.appendChild(opt);
     }
 
-    function formatCurrency(num) {
-      return "$" + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function formatMoney(n) {
+      return "$" + Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     function calculate() {
-      const birthYear = parseInt(document.getElementById("birthYear").value);
-      const birthMonth = parseInt(document.getElementById("birthMonth").value);
+      const monthBorn = parseInt(document.getElementById("monthBorn").value);
+      const yearBorn = parseInt(document.getElementById("yearBorn").value);
+      const birthDate = new Date(yearBorn, monthBorn, 1);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+
       const current = parseFloat(document.getElementById("current").value || 0);
-      const roi = 8 / 100 / 12;
       const goal = parseFloat(document.getElementById("goal").value);
-      const term = parseInt(document.getElementById("term").value);
-      const investPeriod = parseInt(document.getElementById("investmentPeriod").value);
-      const months = investPeriod * 12;
+      const period = parseInt(document.getElementById("period").value);
+      const months = period * 12;
+      const roi = 8 / 100 / 12;
 
       const FV_current = current * Math.pow(1 + roi, months);
       const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
       const totalInvested = PMT * months;
-      const finalValue = FV_current + totalInvested * (((Math.pow(1 + roi, months)) - 1) / roi);
-      const profitEarned = finalValue - totalInvested - current;
+      const profitEarned = goal - totalInvested - current;
+      const withdrawalAge = age + period + 1;
 
-      const today = new Date();
-      const birthDate = new Date(birthYear, birthMonth, 1);
-      const age = today.getFullYear() - birthDate.getFullYear();
-      const withdrawalAge = age + investPeriod + 1;
-
-      document.getElementById("monthly").innerText = formatCurrency(PMT > 0 ? PMT : 0);
-      document.getElementById("invested").innerText = formatCurrency(totalInvested);
-      document.getElementById("interest").innerText = formatCurrency(profitEarned);
-      document.getElementById("final").innerText = formatCurrency(finalValue);
+      document.getElementById("monthly").innerText = formatMoney(PMT > 0 ? PMT : 0);
+      document.getElementById("invested").innerText = formatMoney(totalInvested);
+      document.getElementById("interest").innerText = formatMoney(profitEarned);
+      document.getElementById("final").innerText = formatMoney(goal);
       document.getElementById("withdrawal").innerText = withdrawalAge;
+
+      document.getElementById("results").style.display = 'block';
     }
   </script>
 </body>
