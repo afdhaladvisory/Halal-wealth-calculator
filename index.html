@@ -125,6 +125,11 @@
       display: flex;
       gap: 20px;
     }
+    .radio-group input[type="radio"] {
+      accent-color: #2b3e37;
+      transform: scale(1.2);
+      margin-right: 5px;
+    }
     /* Dim contact form when error popup is shown */
     .dimmed {
       opacity: 0.4;
@@ -142,7 +147,7 @@
         <label>Month & Year Born:</label>
         <div style="width: 45%; display: flex; gap: 5px;">
           <select id="birthMonth">
-            <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option><option value="3">Apr</option>
+            <option value="0">Jan</option><option value="1" selected>Feb</option><option value="2">Mar</option><option value="3">Apr</option>
             <option value="4">May</option><option value="5">Jun</option><option value="6">Jul</option><option value="7">Aug</option>
             <option value="8">Sep</option><option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
           </select>
@@ -217,32 +222,32 @@
     <div class="form-row">
       <label>Is Halal Returns Important To You?</label>
       <div class="radio-group">
-        <label><input type="radio" name="halal" value="yes"> Yes</label>
-        <label><input type="radio" name="halal" value="no"> No</label>
+        <label><input type="radio" name="halal" value="yes" onchange="validateContactForm()"> Yes</label>
+        <label><input type="radio" name="halal" value="no" onchange="validateContactForm()"> No</label>
       </div>
     </div>
 
     <div class="form-row">
       <label>Are You Ready To Take Action Today?</label>
       <div class="radio-group">
-        <label><input type="radio" name="ready" value="yes" onclick="readyYes()"> Yes</label>
-        <label><input type="radio" name="ready" value="no" onclick="readyNo()"> No</label>
+        <label><input type="radio" name="ready" value="yes" onclick="readyYes()" onchange="validateContactForm()"> Yes</label>
+        <label><input type="radio" name="ready" value="no" onclick="readyNo()" onchange="validateContactForm()"> No</label>
       </div>
     </div>
 
     <div class="form-row">
       <label>Your Name:</label>
-      <input type="text" id="userName">
+      <input type="text" id="userName" oninput="validateContactForm()">
     </div>
 
     <div class="form-row">
       <label>Phone Number:</label>
-      <input type="text" id="userPhone">
+      <input type="text" id="userPhone" oninput="validateContactForm()">
     </div>
 
     <div class="popup-buttons">
       <button onclick="backToResults()">⬅ Back</button>
-      <button id="submitDetails" onclick="submitForm()">Submit Details</button>
+      <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
     </div>
   </div>
 
@@ -253,14 +258,22 @@
     <button onclick="returnToContact()">Go Back</button>
   </div>
 
+  <!-- Confirmation Popup -->
+  <div id="confirmationPopup" class="popup hidden">
+    <h3 style="color:#2b3e37;">Your commitment is our priority</h3>
+    <p>Assalamualaikum, our team will contact you as soon as possible insya’allah once we receive your email. Jazāk Allāhu Khayran</p>
+    <button onclick="closeConfirmation()">Close</button>
+  </div>
+
 <script>
+  // Default Birth Year = 1980
   const yearSelect = document.getElementById('birthYear');
   const currentYear = new Date().getFullYear();
   for (let y = currentYear - 80; y <= currentYear; y++) {
     const opt = document.createElement('option');
     opt.value = y;
     opt.text = y;
-    if (y === 1995) opt.selected = true;
+    if (y === 1980) opt.selected = true;
     yearSelect.appendChild(opt);
   }
 
@@ -311,58 +324,35 @@
     document.getElementById("popupResults").classList.remove('hidden');
   }
 
-  // POPUP MANAGEMENT
-  document.getElementById('overlay').addEventListener('click', () => {
-    closePopup();
-    closeContactPopup();
-    closeErrorPopup();
-  });
+  // Validate Contact Form to Enable Submit Button
+  function validateContactForm() {
+    const halal = document.querySelector('input[name="halal"]:checked');
+    const ready = document.querySelector('input[name="ready"]:checked');
+    const name = document.getElementById('userName').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
+    const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
 
-  function closePopup() {
-    document.getElementById("popupResults").classList.add('hidden');
-    document.getElementById("overlay").style.display = 'none';
+    if (halal && ready && name && phoneRegex.test(phone) && ready.value === 'yes') {
+      document.getElementById('submitDetails').disabled = false;
+    } else {
+      document.getElementById('submitDetails').disabled = true;
+    }
   }
 
-  function restartForm() {
-    document.getElementById("calcForm").reset();
-    closePopup();
-  }
-
-  function openContactPopup() {
-    document.getElementById("popupResults").classList.add('hidden');
-    document.getElementById("contactPopup").classList.remove('hidden');
-  }
-
-  function backToResults() {
-    document.getElementById("contactPopup").classList.add('hidden');
-    document.getElementById("popupResults").classList.remove('hidden');
-  }
-
-  function closeContactPopup() {
-    document.getElementById("contactPopup").classList.add('hidden');
-    document.getElementById("overlay").style.display = 'none';
-  }
-
-  // READY LOGIC
+  // Ready Logic
   function readyNo() {
     showError("Everyone has their time and we understand, but only when you are ready will be the best time for us to contact you");
     document.getElementById('submitDetails').disabled = true;
   }
   function readyYes() {
     closeErrorPopup();
-    document.getElementById('submitDetails').disabled = false;
+    validateContactForm();
   }
 
-  // SUBMIT FORM
+  // Submit Form Logic
   function submitForm() {
     const name = document.getElementById('userName').value.trim();
     const phone = document.getElementById('userPhone').value.trim();
-    const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
-
-    if (!phoneRegex.test(phone)) {
-      showError("Invalid phone number format. Please enter a valid Singapore number.");
-      return;
-    }
 
     // Collect form inputs & results for email body
     const birthYear = document.getElementById("birthYear").value;
@@ -380,23 +370,31 @@
     const annual = document.getElementById("annualPopup").innerText;
     const enough = document.getElementById("enoughFunding").innerText;
 
+    const subject = `Islamic Investment Submission - ${name}`;
     const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek your expertise and help to plan my future. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare/Idle Cash ($): $${current}\n\n--- RESULTS ---\nAmount Needed Monthly: ${monthly}\nAmount Invested in Total: ${invested}\nProfit Earned: ${profit}\nEstimated Final Value: ${finalVal}\nWithdrawal Age: ${withdrawalAge}\nAnnual/Yearly Premium: ${annual}\nEnough funding for first year?: ${enough}`;
 
-    window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:afdhal.advisory@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // Show Confirmation Popup
+    document.getElementById("contactPopup").classList.add('hidden');
+    document.getElementById("confirmationPopup").classList.remove('hidden');
   }
 
-  // ERROR POPUP
+  function closeConfirmation() {
+    document.getElementById("confirmationPopup").classList.add('hidden');
+    document.getElementById("overlay").style.display = 'none';
+  }
+
+  // Error Popup
   function showError(message) {
     document.getElementById('contactPopup').classList.add('dimmed');
     document.getElementById('errorMsg').innerText = message;
     document.getElementById('errorPopup').classList.remove('hidden');
   }
-
   function closeErrorPopup() {
     document.getElementById('errorPopup').classList.add('hidden');
     document.getElementById('contactPopup').classList.remove('dimmed');
   }
-
   function returnToContact() {
     document.getElementById('errorPopup').classList.add('hidden');
     document.getElementById('contactPopup').classList.remove('dimmed');
@@ -404,4 +402,4 @@
   }
 </script>
 </body>
-</html>
+</html
