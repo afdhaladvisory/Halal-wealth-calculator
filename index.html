@@ -78,7 +78,6 @@
       margin-top: 1rem;
     }
     .hidden { display: none; }
-    /* ✅ Center popup on screen */
     .popup {
       position: fixed;
       top: 50%;
@@ -136,7 +135,6 @@
         </select>
       </div>
 
-      <!-- ✅ Swapped position -->
       <div class="form-row">
         <label>Investment Term (Years):</label>
         <select id="term">
@@ -177,40 +175,22 @@
       </div>
     </div>
 
-    <!-- ✅ Contact Form Section -->
+    <!-- ✅ Always show contact form -->
     <div class="box-section">
       <div class="form-row">
-        <label>Is Halal Returns Important To You?</label>
-        <div class="form-radio">
-          <label><input type="radio" name="halal" value="yes"> Yes</label>
-          <label><input type="radio" name="halal" value="no"> No</label>
-        </div>
+        <label>Your Name:</label>
+        <input type="text" id="userName">
       </div>
-
       <div class="form-row">
-        <label>Are You Ready To Take Action Today?</label>
-        <div class="form-radio">
-          <label><input type="radio" name="ready" value="yes"> Yes</label>
-          <label><input type="radio" name="ready" value="no"> No</label>
-        </div>
+        <label>Phone Number:</label>
+        <input type="text" id="userPhone">
       </div>
-
-      <div id="contactFields" class="contact-fields hidden">
-        <div class="form-row">
-          <label>Your Name:</label>
-          <input type="text" id="userName">
-        </div>
-        <div class="form-row">
-          <label>Phone Number:</label>
-          <input type="text" id="userPhone">
-        </div>
-        <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
-      </div>
+      <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
     </div>
   </div>
 
 <script>
-  // ✅ Year Dropdown
+  // ✅ Populate Year Dropdown
   const yearSelect = document.getElementById('birthYear');
   const currentYear = new Date().getFullYear();
   for (let y = currentYear - 80; y <= currentYear; y++) {
@@ -221,22 +201,7 @@
     yearSelect.appendChild(opt);
   }
 
-  // ✅ Show contact fields if both "yes" selected
-  document.querySelectorAll('input[name="ready"], input[name="halal"]').forEach(el => {
-    el.addEventListener('change', () => {
-      const ready = document.querySelector('input[name="ready"]:checked')?.value;
-      const halal = document.querySelector('input[name="halal"]:checked')?.value;
-      const contactSection = document.getElementById('contactFields');
-
-      if (ready === 'yes' && halal === 'yes') {
-        contactSection.classList.remove('hidden');
-      } else {
-        contactSection.classList.add('hidden');
-      }
-    });
-  });
-
-  // ✅ Enable submit button only when name & phone valid
+  // ✅ Enable submit button only when name & phone are valid
   document.getElementById('userName').addEventListener('input', validateForm);
   document.getElementById('userPhone').addEventListener('input', validateForm);
 
@@ -267,10 +232,12 @@
     // ✅ Future Value of Current Lump Sum
     const FV_current = current * Math.pow(1 + roi, months);
 
-    // ✅ Monthly contribution needed (Future Value of Annuity Formula)
+    // ✅ Monthly contribution needed
     const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
 
+    // ✅ Total Invested now only counts what user contributes monthly
     const totalInvested = PMT * months;
+
     const futureValue = totalInvested + FV_current;
     const profitEarned = futureValue - totalInvested - current;
 
@@ -317,7 +284,7 @@
     const current = document.getElementById("current").value;
     const growthRate = document.getElementById("growthRate").value;
 
-    // ✅ Email body with new first sentence
+    // ✅ Email body with intro sentence
     const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek help to plan. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nFunding Period: ${fundingPeriod}\nGoal: $${goal}`;
 
     window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
