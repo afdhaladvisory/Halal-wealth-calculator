@@ -48,12 +48,15 @@
       margin-top: 10px;
       border: none;
       border-radius: 4px;
-      width: 100%;
       cursor: pointer;
+    }
+    button:disabled {
+      background: grey;
+      cursor: not-allowed;
     }
     h2 { color: green; }
     img.logo {
-      width: 100%;
+      width: 80%; /* reduced to 80% of current scale */
       display: block;
       margin: 0 auto 20px;
     }
@@ -85,7 +88,7 @@
       gap: 10px;
     }
     .popup-buttons button {
-      transform: scale(0.75);
+      width: 75%; /* reduce width but keep normal scale */
     }
     .close-btn {
       position: absolute;
@@ -126,7 +129,11 @@
     #errorPopup button {
       width: auto;
       padding: 8px 20px;
-      transform: scale(0.85);
+    }
+    /* Dim contact form when error popup is shown */
+    .dimmed {
+      opacity: 0.4;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -224,8 +231,8 @@
     <div class="form-row">
       <label>Are You Ready To Take Action Today?</label>
       <div class="radio-group">
-        <label><input type="radio" name="ready" value="yes"> Yes</label>
-        <label><input type="radio" name="ready" value="no"> No</label>
+        <label><input type="radio" name="ready" value="yes" onclick="readyYes()"> Yes</label>
+        <label><input type="radio" name="ready" value="no" onclick="readyNo()"> No</label>
       </div>
     </div>
 
@@ -244,13 +251,12 @@
 
   <!-- Error Popup -->
   <div id="errorPopup" class="popup hidden">
-    <h3 style="color: red;">Error</h3>
+    <h3 style="color: red;">Notice</h3>
     <p id="errorMsg">Invalid input detected.</p>
     <button onclick="returnToContact()">Go Back</button>
   </div>
 
 <script>
-  // Populate Year dropdown
   const yearSelect = document.getElementById('birthYear');
   const currentYear = new Date().getFullYear();
   for (let y = currentYear - 80; y <= currentYear; y++) {
@@ -282,15 +288,12 @@
     let age = today.getFullYear() - birthDate.getFullYear();
     if (today.getMonth() < birthDate.getMonth()) age--;
 
-    // annuity due formula (contribution at start of each month)
+    // annuity due formula
     const PMT = goal * roi / ((Math.pow(1 + roi, months) - 1) * (1 + roi));
     const totalInvested = PMT * months;
     const profitEarned = goal - totalInvested;
-
-    // Annual premium
     const annualPremium = PMT * 12;
 
-    // Enough funding for first year?
     const enoughFundingEl = document.getElementById("enoughFunding");
     if ((PMT * 12) <= current) {
       enoughFundingEl.innerHTML = '<span class="green-text">Yes</span>';
@@ -338,6 +341,17 @@
     document.getElementById("overlay").style.display = 'none';
   }
 
+  // READY LOGIC
+  function readyNo() {
+    showError("Everyone has their time and we understand, but only when you are ready will be the best time for us to contact you");
+    document.getElementById('submitDetails').disabled = true;
+  }
+  function readyYes() {
+    closeErrorPopup();
+    document.getElementById('submitDetails').disabled = false;
+  }
+
+  // SUBMIT FORM
   function submitForm() {
     const name = document.getElementById('userName').value.trim();
     const phone = document.getElementById('userPhone').value.trim();
@@ -362,17 +376,19 @@
 
   // ERROR POPUP
   function showError(message) {
-    document.getElementById('contactPopup').classList.add('hidden');
+    document.getElementById('contactPopup').classList.add('dimmed'); // ✅ dim the contact popup
     document.getElementById('errorMsg').innerText = message;
     document.getElementById('errorPopup').classList.remove('hidden');
   }
 
   function closeErrorPopup() {
     document.getElementById('errorPopup').classList.add('hidden');
+    document.getElementById('contactPopup').classList.remove('dimmed'); // ✅ restore brightness
   }
 
   function returnToContact() {
     document.getElementById('errorPopup').classList.add('hidden');
+    document.getElementById('contactPopup').classList.remove('dimmed'); // ✅ restore brightness
     document.getElementById('contactPopup').classList.remove('hidden');
   }
 </script>
