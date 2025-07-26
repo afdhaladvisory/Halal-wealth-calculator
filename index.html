@@ -74,14 +74,16 @@
     }
     #results {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 10%;
+      left: 10%;
+      width: 80%;
+      height: 80%;
       background: white;
       padding: 2rem;
       overflow-y: auto;
       z-index: 9999;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      border-radius: 10px;
     }
     .popup-buttons {
       display: flex;
@@ -228,7 +230,6 @@
       document.getElementById("interest").innerText = formatCurrency(profitEarned);
       document.getElementById("final").innerText = formatCurrency(futureValue);
       document.getElementById("withdrawal").innerText = withdrawalAge;
-      document.getElementById("investedRow").innerHTML = `Amount Invested in Total: <span id="invested">${formatCurrency(totalInvested)}</span>`;
       document.getElementById("results").style.display = 'block';
     }
 
@@ -240,12 +241,22 @@
     function collectContact() {
       const name = prompt("Enter your name:");
       let phone = prompt("Enter your SG phone number:");
-      const phoneRegex = /^(\+65)?[689]\d{7}$/;
-      if (!phoneRegex.test(phone)) {
-        alert("Please enter a valid Singapore phone number.");
-      } else {
-        alert(`Thanks ${name}, we will contact you at ${phone} soon.`);
+      const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
+      while (!phoneRegex.test(phone)) {
+        phone = prompt("Invalid format. Enter a valid SG phone number:");
       }
+
+      const birthYear = document.getElementById("birthYear").value;
+      const birthMonth = document.getElementById("birthMonth").value;
+      const goal = document.getElementById("goal").value;
+      const fundingPeriod = document.getElementById("fundingPeriod").value;
+      const term = document.getElementById("term").value;
+      const current = document.getElementById("current").value;
+      const growthRate = document.getElementById("growthRate").value;
+
+      const body = `Name: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nFunding Period: ${fundingPeriod}\nGoal: $${goal}`;
+
+      window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
     }
   </script>
 </body>
