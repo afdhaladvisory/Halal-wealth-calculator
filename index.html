@@ -72,6 +72,18 @@
       margin-top: 1rem;
       border-radius: 8px;
     }
+    #results {
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 1px solid #ccc;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
@@ -80,8 +92,9 @@
     <h2>Investment Goal Calculator</h2>
     <form id="calcForm">
       <div class="form-row">
-        <label>Growth Rate Projection:</label>
-        <select id="term">
+        <label>Growth Rate Projection (%):</label>
+        <select id="growthRate">
+          <option value="2">2%</option>
           <option value="4">4%</option>
           <option value="6">6%</option>
           <option value="8" selected>8%</option>
@@ -103,14 +116,6 @@
         <input type="number" id="current" value="50000">
       </div>
       <div class="form-row">
-        <label>Expected Funding Period (Years):</label>
-        <select id="fundingPeriod">
-          <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option>
-          <option value="10" selected>10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option>
-          <option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
-        </select>
-      </div>
-      <div class="form-row">
         <label>Investment Term (Years):</label>
         <select id="term">
           <option value="10">10</option>
@@ -119,8 +124,16 @@
         </select>
       </div>
       <div class="form-row">
+        <label>Expected Funding Period (Years):</label>
+        <select id="fundingPeriod">
+          <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10" selected>10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option>
+          <option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
+        </select>
+      </div>
+      <div class="form-row">
         <label>How Much Do You Need? ($):</label>
-        <input type="number" id="goal" value="100000">
+        <input type="number" id="goal" value="1000000">
       </div>
       <button type="button" onclick="calculate()">Calculate</button>
     </form>
@@ -128,7 +141,7 @@
     <div id="results" style="display:none;">
       <h3>Results</h3>
       <div class="result-row">Amount Needed Monthly: <span id="monthly">$0.00</span></div>
-      <div class="result-row" id="investedRow">Total Amount Invested: <span id="invested">$0.00</span></div>
+      <div class="result-row" id="investedRow">Amount Invested in Total: <span id="invested">$0.00</span></div>
       <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
       <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
       <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
@@ -185,14 +198,15 @@
       const fundingPeriod = parseInt(document.getElementById("fundingPeriod").value);
       const term = parseInt(document.getElementById("term").value);
       const current = parseFloat(document.getElementById("current").value || 0);
-      const roi = 0.08 / 12;
+      const growthRate = parseFloat(document.getElementById("growthRate").value);
+      const roi = growthRate / 100 / 12;
       const months = fundingPeriod * 12;
 
       const FV_current = current * Math.pow(1 + roi, months);
       const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
 
       const totalInvested = PMT * months;
-      const futureValue = FV_current + PMT * ((Math.pow(1 + roi, months) - 1) / roi);
+      const futureValue = totalInvested + FV_current;
       const profitEarned = futureValue - totalInvested - current;
 
       const today = new Date();
@@ -207,7 +221,7 @@
       document.getElementById("interest").innerText = formatCurrency(profitEarned);
       document.getElementById("final").innerText = formatCurrency(futureValue);
       document.getElementById("withdrawal").innerText = withdrawalAge;
-      document.getElementById("investedRow").innerHTML = `Total Amount Invested in ${term} Years: <span id="invested">${formatCurrency(totalInvested)}</span>`;
+      document.getElementById("investedRow").innerHTML = `Amount Invested in Total: <span id="invested">${formatCurrency(totalInvested)}</span>`;
       document.getElementById("results").style.display = 'block';
     }
   </script>
