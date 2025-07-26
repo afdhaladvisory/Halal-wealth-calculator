@@ -196,12 +196,12 @@
     <h3 style="color:#2b3e37;">Results</h3>
     <div class="result-row">Current Age: <span id="agePopup">-</span></div>
     <div class="result-row">Investment Duration (Years): <span id="durationPopup">-</span></div>
-    <div class="result-row">Amount Needed Monthly: <span id="monthlyPopup">$0.00</span></div>
-    <div class="result-row">Amount Invested in Total: <span id="investedPopup">$0.00</span></div>
-    <div class="result-row">Profit Earned: <span id="interestPopup">$0.00</span></div>
-    <div class="result-row">Estimated Final Value: <span id="finalPopup">$0.00</span></div>
+    <div class="result-row">Amount Needed Monthly: <span id="monthlyPopup">$0</span></div>
+    <div class="result-row">Amount Invested in Total: <span id="investedPopup">$0</span></div>
+    <div class="result-row">Profit Earned: <span id="interestPopup">$0</span></div>
+    <div class="result-row">Estimated Final Value: <span id="finalPopup">$0</span></div>
     <div class="result-row">Withdrawal Age: <span id="withdrawalPopup">-</span></div>
-    <div class="result-row">Annual/Yearly Premium: <span id="annualPopup">$0.00</span></div>
+    <div class="result-row">Annual/Yearly Premium: <span id="annualPopup">$0</span></div>
     <div class="result-row">Enough funding for first year?: <span id="enoughFunding"></span></div>
     <div class="popup-buttons">
       <button onclick="restartForm()">Restart</button>
@@ -265,7 +265,7 @@
   }
 
   function formatCurrency(value) {
-    return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
   }
 
   function calculate() {
