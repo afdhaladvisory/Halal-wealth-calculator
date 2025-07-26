@@ -293,9 +293,9 @@
       const current = document.getElementById("current").value;
       const growthRate = document.getElementById("growthRate").value;
 
-      const body = Name: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nFunding Period: ${fundingPeriod}\nGoal: $${goal};
+      const body = `Name: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nFunding Period: ${fundingPeriod}\nGoal: $${goal}`;
 
-      window.location.href = mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)};
+      window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
     }
   </script>
 </body>
