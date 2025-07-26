@@ -9,6 +9,10 @@
       background-color: #e7f0f5;
       padding: 2rem;
       text-align: center;
+      transition: filter 0.3s ease;
+    }
+    body.blurred {
+      filter: blur(4px);
     }
     .container {
       max-width: 600px;
@@ -86,7 +90,7 @@
       padding: 2rem;
       width: 75%;
       max-width: 600px;
-      z-index: 1000;
+      z-index: 1001;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       text-align: center;
@@ -110,6 +114,17 @@
     }
     .green-text { color: green; font-weight: bold; }
     .red-text { color: red; font-weight: bold; }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -143,17 +158,7 @@
         <input type="number" id="goal" value="200000">
       </div>
 
-      <!-- 4. Expected Funding Period -->
-      <div class="form-row">
-        <label>Expected Funding Period (Years):</label>
-        <select id="fundingPeriod">
-          <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option>
-          <option value="10" selected>10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option>
-          <option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
-        </select>
-      </div>
-
-      <!-- 5. Investment Term -->
+      <!-- 4. Investment Term -->
       <div class="form-row">
         <label>Investment Term (Years):</label>
         <select id="term">
@@ -178,6 +183,7 @@
     </form>
 
     <!-- Popup results -->
+    <div id="overlay" class="overlay"></div>
     <div id="popupResults" class="popup hidden">
       <span class="close-btn" onclick="closePopup()">✖</span>
       <h3>Results</h3>
@@ -223,125 +229,126 @@
     </div>
   </div>
 
-  <script>
-    // Populate Year dropdown
-    const yearSelect = document.getElementById('birthYear');
-    const currentYear = new Date().getFullYear();
-    for (let y = currentYear - 80; y <= currentYear; y++) {
-      const opt = document.createElement('option');
-      opt.value = y;
-      opt.text = y;
-      if (y === 1995) opt.selected = true;
-      yearSelect.appendChild(opt);
-    }
+<script>
+  // Populate Year dropdown
+  const yearSelect = document.getElementById('birthYear');
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear - 80; y <= currentYear; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.text = y;
+    if (y === 1995) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
 
-    // Toggle contact fields
-    document.querySelectorAll('input[name="ready"], input[name="halal"]').forEach(el => {
-      el.addEventListener('change', () => {
-        const ready = document.querySelector('input[name="ready"]:checked')?.value;
-        const halal = document.querySelector('input[name="halal"]:checked')?.value;
-        const contactSection = document.getElementById('contactFields');
-        if (ready === 'yes' && halal === 'yes') {
-          contactSection.classList.remove('hidden');
-        } else {
-          contactSection.classList.add('hidden');
-        }
-      });
-    });
-
-    document.getElementById('userName').addEventListener('input', validateForm);
-    document.getElementById('userPhone').addEventListener('input', validateForm);
-
-    function validateForm() {
-      const name = document.getElementById('userName').value.trim();
-      const phone = document.getElementById('userPhone').value.trim();
-      const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
-      document.getElementById('submitDetails').disabled = !(name.length > 0 && phoneRegex.test(phone));
-    }
-
-    function formatCurrency(value) {
-      return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    }
-
-    // NEW CALCULATION LOGIC
-    function calculate() {
-      const birthYear = parseInt(document.getElementById("birthYear").value);
-      const birthMonth = parseInt(document.getElementById("birthMonth").value);
-      const goal = parseFloat(document.getElementById("goal").value);
-      const fundingPeriod = parseInt(document.getElementById("fundingPeriod").value);
-      const term = parseInt(document.getElementById("term").value);
-      const current = parseFloat(document.getElementById("current").value || 0);
-      const growthRate = parseFloat(document.getElementById("growthRate").value);
-
-      const roi = growthRate / 100 / 12;
-      const months = fundingPeriod * 12;
-
-      // Work backwards to find required monthly contribution
-      const PMT = goal * roi / (Math.pow(1 + roi, months) - 1);
-      const totalInvested = PMT * months;
-      const futureValue = goal;
-      const profitEarned = futureValue - totalInvested;
-
-      // Calculate withdrawal age
-      const today = new Date();
-      const birthDate = new Date(birthYear, birthMonth, 1);
-      let age = today.getFullYear() - birthDate.getFullYear();
-      if (today.getMonth() < birthDate.getMonth()) age--;
-      const withdrawalAge = age + term + 1;
-
-      // Update popup
-      document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
-      document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
-      document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
-      document.getElementById("finalPopup").innerText = formatCurrency(futureValue);
-      document.getElementById("withdrawalPopup").innerText = withdrawalAge;
-
-      // Enough funding check
-      const enoughFundingEl = document.getElementById("enoughFunding");
-      if (current >= totalInvested) {
-        enoughFundingEl.innerHTML = '<span class="green-text">Yes</span>';
+  // Toggle contact fields
+  document.querySelectorAll('input[name="ready"], input[name="halal"]').forEach(el => {
+    el.addEventListener('change', () => {
+      const ready = document.querySelector('input[name="ready"]:checked')?.value;
+      const halal = document.querySelector('input[name="halal"]:checked')?.value;
+      const contactSection = document.getElementById('contactFields');
+      if (ready === 'yes' && halal === 'yes') {
+        contactSection.classList.remove('hidden');
       } else {
-        enoughFundingEl.innerHTML = '<span class="red-text">No</span>';
+        contactSection.classList.add('hidden');
       }
+    });
+  });
 
-      document.getElementById("popupResults").classList.remove('hidden');
+  document.getElementById('userName').addEventListener('input', validateForm);
+  document.getElementById('userPhone').addEventListener('input', validateForm);
+
+  function validateForm() {
+    const name = document.getElementById('userName').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
+    const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
+    document.getElementById('submitDetails').disabled = !(name.length > 0 && phoneRegex.test(phone));
+  }
+
+  function formatCurrency(value) {
+    return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  // NEW CALCULATION LOGIC – annuity due (beginning of month contributions)
+  function calculate() {
+    const birthYear = parseInt(document.getElementById("birthYear").value);
+    const birthMonth = parseInt(document.getElementById("birthMonth").value);
+    const goal = parseFloat(document.getElementById("goal").value);
+    const term = parseInt(document.getElementById("term").value);
+    const current = parseFloat(document.getElementById("current").value || 0);
+    const growthRate = parseFloat(document.getElementById("growthRate").value);
+
+    const roi = growthRate / 100 / 12;
+    const months = term * 12;
+
+    // annuity due formula (contribution at start of each month)
+    const PMT = goal * roi / ((Math.pow(1 + roi, months) - 1) * (1 + roi));
+
+    const totalInvested = PMT * months;
+    const futureValue = goal;
+    const profitEarned = futureValue - totalInvested;
+
+    // withdrawal age calculation
+    const today = new Date();
+    const birthDate = new Date(birthYear, birthMonth, 1);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    if (today.getMonth() < birthDate.getMonth()) age--;
+    const withdrawalAge = age + term + 1;
+
+    // Display results
+    document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
+    document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
+    document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
+    document.getElementById("finalPopup").innerText = formatCurrency(futureValue);
+    document.getElementById("withdrawalPopup").innerText = withdrawalAge;
+
+    // Funding check
+    const enoughFundingEl = document.getElementById("enoughFunding");
+    if (current >= totalInvested) {
+      enoughFundingEl.innerHTML = '<span class="green-text">Yes</span>';
+    } else {
+      enoughFundingEl.innerHTML = '<span class="red-text">No</span>';
     }
 
-    function closePopup() {
-      document.getElementById("popupResults").classList.add('hidden');
+    document.getElementById("overlay").style.display = 'block';
+    document.getElementById("popupResults").classList.remove('hidden');
+  }
+
+  function closePopup() {
+    document.getElementById("popupResults").classList.add('hidden');
+    document.getElementById("overlay").style.display = 'none';
+  }
+
+  function restartForm() {
+    document.getElementById("calcForm").reset();
+    closePopup();
+  }
+
+  function proceedWithForm() {
+    closePopup();
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function submitForm() {
+    const name = document.getElementById('userName').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
+    const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
+    if (!phoneRegex.test(phone)) {
+      alert("Invalid phone number format. Please enter a valid Singapore number.");
+      return;
     }
 
-    function restartForm() {
-      document.getElementById("calcForm").reset();
-      closePopup();
-    }
+    const birthYear = document.getElementById("birthYear").value;
+    const birthMonth = document.getElementById("birthMonth").value;
+    const goal = document.getElementById("goal").value;
+    const term = document.getElementById("term").value;
+    const current = document.getElementById("current").value;
+    const growthRate = document.getElementById("growthRate").value;
 
-    function proceedWithForm() {
-      closePopup();
-      window.scrollTo(0, document.body.scrollHeight);
-    }
+    const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek help to plan. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nGoal: $${goal}`;
 
-    function submitForm() {
-      const name = document.getElementById('userName').value.trim();
-      const phone = document.getElementById('userPhone').value.trim();
-      const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
-      if (!phoneRegex.test(phone)) {
-        alert("Invalid phone number format. Please enter a valid Singapore number.");
-        return;
-      }
-
-      const birthYear = document.getElementById("birthYear").value;
-      const birthMonth = document.getElementById("birthMonth").value;
-      const goal = document.getElementById("goal").value;
-      const fundingPeriod = document.getElementById("fundingPeriod").value;
-      const term = document.getElementById("term").value;
-      const current = document.getElementById("current").value;
-      const growthRate = document.getElementById("growthRate").value;
-
-      const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek help to plan. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nFunding Period: ${fundingPeriod}\nGoal: $${goal}`;
-
-      window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
-    }
-  </script>
+    window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
+  }
+</script>
 </body>
 </html>
