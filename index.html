@@ -4,9 +4,11 @@
   <title>Investment Goal Calculator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #e7f0f5;
+      font-family: 'Montserrat', sans-serif;
+      background-color: #2b3e37;
       padding: 2rem;
       text-align: center;
       transition: filter 0.3s ease;
@@ -42,7 +44,7 @@
       text-align: center;
     }
     button {
-      background: green;
+      background: #2b3e37;
       color: white;
       padding: 10px;
       margin-top: 10px;
@@ -54,9 +56,9 @@
       background: grey;
       cursor: not-allowed;
     }
-    h2 { color: green; }
+    h2 { color: #2b3e37; font-weight: 600; }
     img.logo {
-      width: 80%; /* reduced to 80% of current scale */
+      width: 80%;
       display: block;
       margin: 0 auto 20px;
     }
@@ -80,6 +82,7 @@
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       text-align: center;
+      font-family: 'Montserrat', sans-serif;
     }
     .popup-buttons {
       display: flex;
@@ -88,7 +91,7 @@
       gap: 10px;
     }
     .popup-buttons button {
-      width: 75%; /* reduce width but keep normal scale */
+      width: 75%;
     }
     .close-btn {
       position: absolute;
@@ -112,23 +115,15 @@
       z-index: 1000;
       display: none;
     }
-    /* Contact Popup Adjustments */
+    /* Contact Popup */
     #contactPopup .form-row {
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
     }
-    #contactPopup input[type="radio"] {
-      margin-left: 5px;
-    }
     .radio-group {
       display: flex;
       gap: 20px;
-    }
-    /* Error Popup */
-    #errorPopup button {
-      width: auto;
-      padding: 8px 20px;
     }
     /* Dim contact form when error popup is shown */
     .dimmed {
@@ -142,7 +137,6 @@
     <img src="logo.png" alt="Logo" class="logo">
     <h2>Investment Goal Calculator</h2>
     <form id="calcForm">
-
       <!-- Month & Year Born -->
       <div class="form-row">
         <label>Month & Year Born:</label>
@@ -199,7 +193,7 @@
   <!-- Results Popup -->
   <div id="popupResults" class="popup hidden">
     <span class="close-btn" onclick="closePopup()">✖</span>
-    <h3>Results</h3>
+    <h3 style="color:#2b3e37;">Results</h3>
     <div class="result-row">Current Age: <span id="agePopup">-</span></div>
     <div class="result-row">Investment Duration (Years): <span id="durationPopup">-</span></div>
     <div class="result-row">Amount Needed Monthly: <span id="monthlyPopup">$0.00</span></div>
@@ -218,7 +212,7 @@
   <!-- Contact Form Popup -->
   <div id="contactPopup" class="popup hidden">
     <span class="close-btn" onclick="closeContactPopup()">✖</span>
-    <h3>Contact Details</h3>
+    <h3 style="color:#2b3e37;">Contact Details</h3>
 
     <div class="form-row">
       <label>Is Halal Returns Important To You?</label>
@@ -246,7 +240,10 @@
       <input type="text" id="userPhone">
     </div>
 
-    <button id="submitDetails" onclick="submitForm()">Submit Details</button>
+    <div class="popup-buttons">
+      <button onclick="backToResults()">⬅ Back</button>
+      <button id="submitDetails" onclick="submitForm()">Submit Details</button>
+    </div>
   </div>
 
   <!-- Error Popup -->
@@ -336,6 +333,11 @@
     document.getElementById("contactPopup").classList.remove('hidden');
   }
 
+  function backToResults() {
+    document.getElementById("contactPopup").classList.add('hidden');
+    document.getElementById("popupResults").classList.remove('hidden');
+  }
+
   function closeContactPopup() {
     document.getElementById("contactPopup").classList.add('hidden');
     document.getElementById("overlay").style.display = 'none';
@@ -362,6 +364,7 @@
       return;
     }
 
+    // Collect form inputs & results for email body
     const birthYear = document.getElementById("birthYear").value;
     const birthMonth = document.getElementById("birthMonth").value;
     const goal = document.getElementById("goal").value;
@@ -369,26 +372,34 @@
     const current = document.getElementById("current").value;
     const growthRate = document.getElementById("growthRate").value;
 
-    const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek help to plan. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nGoal: $${goal}`;
+    const monthly = document.getElementById("monthlyPopup").innerText;
+    const invested = document.getElementById("investedPopup").innerText;
+    const profit = document.getElementById("interestPopup").innerText;
+    const finalVal = document.getElementById("finalPopup").innerText;
+    const withdrawalAge = document.getElementById("withdrawalPopup").innerText;
+    const annual = document.getElementById("annualPopup").innerText;
+    const enough = document.getElementById("enoughFunding").innerText;
+
+    const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek your expertise and help to plan my future. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare/Idle Cash ($): $${current}\n\n--- RESULTS ---\nAmount Needed Monthly: ${monthly}\nAmount Invested in Total: ${invested}\nProfit Earned: ${profit}\nEstimated Final Value: ${finalVal}\nWithdrawal Age: ${withdrawalAge}\nAnnual/Yearly Premium: ${annual}\nEnough funding for first year?: ${enough}`;
 
     window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
   }
 
   // ERROR POPUP
   function showError(message) {
-    document.getElementById('contactPopup').classList.add('dimmed'); // ✅ dim the contact popup
+    document.getElementById('contactPopup').classList.add('dimmed');
     document.getElementById('errorMsg').innerText = message;
     document.getElementById('errorPopup').classList.remove('hidden');
   }
 
   function closeErrorPopup() {
     document.getElementById('errorPopup').classList.add('hidden');
-    document.getElementById('contactPopup').classList.remove('dimmed'); // ✅ restore brightness
+    document.getElementById('contactPopup').classList.remove('dimmed');
   }
 
   function returnToContact() {
     document.getElementById('errorPopup').classList.add('hidden');
-    document.getElementById('contactPopup').classList.remove('dimmed'); // ✅ restore brightness
+    document.getElementById('contactPopup').classList.remove('dimmed');
     document.getElementById('contactPopup').classList.remove('hidden');
   }
 </script>
