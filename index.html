@@ -382,7 +382,7 @@
 
     const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek your expertise and help to plan my future. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare/Idle Cash ($): $${current}\n\n--- RESULTS ---\nAmount Needed Monthly: ${monthly}\nAmount Invested in Total: ${invested}\nProfit Earned: ${profit}\nEstimated Final Value: ${finalVal}\nWithdrawal Age: ${withdrawalAge}\nAnnual/Yearly Premium: ${annual}\nEnough funding for first year?: ${enough}`;
 
-    window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Islamic%20Investment%20Submission%20-%20${name}&body=${encodeURIComponent(body)}`;
   }
 
   // ERROR POPUP
