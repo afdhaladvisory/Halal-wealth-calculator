@@ -1,16 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Investment Goal Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #e7f0f5;
       padding: 2rem;
       text-align: center;
-      margin: 0;
     }
     .container {
       max-width: 600px;
@@ -19,7 +17,6 @@
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      position: relative;
     }
     form {
       display: flex;
@@ -43,6 +40,11 @@
       padding: 8px;
       text-align: center;
     }
+    .form-radio {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
     button {
       background: green;
       color: white;
@@ -64,37 +66,32 @@
       justify-content: space-between;
       margin: 5px 0;
     }
-    .result-row span.green { color: green; font-weight: bold; }
-    .result-row span.red { color: red; font-weight: bold; }
     .box-section {
       border: 1px solid #ccc;
       padding: 1rem;
       margin-top: 1rem;
       border-radius: 8px;
     }
+    .contact-fields {
+      margin-top: 1rem;
+    }
+    .hidden { display: none; }
     .popup {
       position: fixed;
-      top: 50%;
+      top: 10%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       background: white;
       border: 1px solid #ccc;
       padding: 2rem;
-      width: 75%;
+      width: 80%;
       max-width: 600px;
       z-index: 1000;
       border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
-    .popup .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: none;
-      border: none;
-      font-size: 20px;
-      font-weight: bold;
-      cursor: pointer;
+    .popup button {
+      width: 45%;
     }
     .popup-buttons {
       display: flex;
@@ -107,8 +104,6 @@
   <div class="container">
     <img src="logo.png" alt="Logo" class="logo">
     <h2>Investment Goal Calculator</h2>
-
-    <!-- ✅ FORM with rearranged input order -->
     <form id="calcForm">
       <div class="form-row">
         <label>Month & Year Born:</label>
@@ -121,33 +116,10 @@
           <select id="birthYear"></select>
         </div>
       </div>
-
       <div class="form-row">
         <label>Spare/Idle Cash ($):</label>
         <input type="number" id="current" value="50000">
       </div>
-
-      <div class="form-row">
-        <label>How Much Do You Need? ($):</label>
-        <input type="number" id="goal" value="200000">
-      </div>
-
-      <div class="form-row">
-        <label>Expected Funding Period (Years):</label>
-        <select id="fundingPeriod">
-          <option value="5">5</option><option value="10" selected>10</option><option value="15">15</option><option value="20">20</option>
-        </select>
-      </div>
-
-      <div class="form-row">
-        <label>Investment Term (Years):</label>
-        <select id="term">
-          <option value="10">10</option>
-          <option value="15" selected>15</option>
-          <option value="20">20</option>
-        </select>
-      </div>
-
       <div class="form-row">
         <label>Growth Rate Projection (%):</label>
         <select id="growthRate">
@@ -157,136 +129,174 @@
           <option value="8" selected>8</option>
         </select>
       </div>
-
+      <div class="form-row">
+        <label>Expected Funding Period (Years):</label>
+        <select id="fundingPeriod">
+          <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10" selected>10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option>
+          <option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Investment Term (Years):</label>
+        <select id="term">
+          <option value="10">10</option>
+          <option value="15" selected>15</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>How Much Do You Need? ($):</label>
+        <input type="number" id="goal" value="1000000">
+      </div>
       <button type="button" onclick="calculate()">Calculate</button>
     </form>
 
-    <!-- ✅ POPUP RESULTS -->
     <div id="popupResults" class="popup hidden">
-      <button class="close-btn" onclick="closePopup()">✖</button>
       <h3>Results</h3>
       <div class="result-row">Amount Needed Monthly: <span id="monthlyPopup">$0.00</span></div>
       <div class="result-row">Amount Invested in Total: <span id="investedPopup">$0.00</span></div>
       <div class="result-row">Profit Earned: <span id="interestPopup">$0.00</span></div>
       <div class="result-row">Estimated Final Value: <span id="finalPopup">$0.00</span></div>
       <div class="result-row">Withdrawal Age: <span id="withdrawalPopup">-</span></div>
-      <div class="result-row">Enough funding to start? <span id="enoughPopup">-</span></div>
       <div class="popup-buttons">
         <button onclick="restartForm()">Restart</button>
         <button onclick="proceedWithForm()">Seek Advise Today</button>
       </div>
     </div>
 
-    <!-- ✅ CONTACT SECTION always visible -->
     <div class="box-section">
       <div class="form-row">
-        <label>Your Name:</label>
-        <input type="text" id="userName">
+        <label>Is Halal Returns Important To You?</label>
+        <div class="form-radio">
+          <label><input type="radio" name="halal" value="yes"> Yes</label>
+          <label><input type="radio" name="halal" value="no"> No</label>
+        </div>
       </div>
       <div class="form-row">
-        <label>Phone Number:</label>
-        <input type="text" id="userPhone">
+        <label>Are You Ready To Take Action Today?</label>
+        <div class="form-radio">
+          <label><input type="radio" name="ready" value="yes"> Yes</label>
+          <label><input type="radio" name="ready" value="no"> No</label>
+        </div>
       </div>
-      <button id="submitDetails" onclick="submitForm()">Submit Details</button>
+      <div id="contactFields" class="contact-fields hidden">
+        <div class="form-row">
+          <label>Your Name:</label>
+          <input type="text" id="userName">
+        </div>
+        <div class="form-row">
+          <label>Phone Number:</label>
+          <input type="text" id="userPhone">
+        </div>
+        <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
+      </div>
     </div>
   </div>
 
-<script>
-  // Populate year dropdown
-  const yearSelect = document.getElementById('birthYear');
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear - 80; y <= currentYear; y++) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.text = y;
-    if (y === 1995) opt.selected = true;
-    yearSelect.appendChild(opt);
-  }
-
-  function formatCurrency(value) {
-    return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  }
-
-  function calculate() {
-    const goal = parseFloat(document.getElementById("goal").value);
-    const fundingPeriod = parseInt(document.getElementById("fundingPeriod").value);
-    const term = parseInt(document.getElementById("term").value);
-    const current = parseFloat(document.getElementById("current").value || 0);
-    const growthRate = parseFloat(document.getElementById("growthRate").value);
-    const birthYear = parseInt(document.getElementById("birthYear").value);
-    const birthMonth = parseInt(document.getElementById("birthMonth").value);
-
-    const roi = growthRate / 100 / 12;
-    const months = fundingPeriod * 12;
-
-    // ✅ Future value from spare cash
-    const FV_current = current * Math.pow(1 + roi, months);
-
-    // ✅ Monthly needed to reach goal
-    const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
-
-    // ✅ Total invested based on investment term
-    const totalInvested = PMT * term * 12;
-    const futureValue = totalInvested + FV_current;
-    const profitEarned = futureValue - totalInvested - current;
-
-    // ✅ Withdrawal Age calculation
-    const today = new Date();
-    const birthDate = new Date(birthYear, birthMonth, 1);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    if (today.getMonth() < birthDate.getMonth()) age--;
-    const withdrawalAge = age + term + 1;
-
-    // ✅ Enough funding check
-    const enough = current > totalInvested 
-        ? "<span class='green'>YES</span>" 
-        : "<span class='red'>NO</span>";
-
-    // ✅ Show results
-    document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
-    document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
-    document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
-    document.getElementById("finalPopup").innerText = formatCurrency(futureValue);
-    document.getElementById("withdrawalPopup").innerText = withdrawalAge;
-    document.getElementById("enoughPopup").innerHTML = enough;
-
-    document.getElementById("popupResults").classList.remove('hidden');
-  }
-
-  function closePopup() {
-    document.getElementById("popupResults").classList.add('hidden');
-  }
-
-  function restartForm() {
-    document.getElementById("calcForm").reset();
-    closePopup();
-  }
-
-  function proceedWithForm() {
-    closePopup();
-    window.scrollTo(0, document.body.scrollHeight);
-  }
-
-  function submitForm() {
-    const name = document.getElementById('userName').value.trim();
-    const phone = document.getElementById('userPhone').value.trim();
-    const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
-    if (!phoneRegex.test(phone)) {
-      alert("Invalid phone number format. Please enter a valid Singapore number.");
-      return;
+  <script>
+    const yearSelect = document.getElementById('birthYear');
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear - 80; y <= currentYear; y++) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.text = y;
+      if (y === 1995) opt.selected = true;
+      yearSelect.appendChild(opt);
     }
 
-    const birthYear = document.getElementById("birthYear").value;
-    const birthMonth = document.getElementById("birthMonth").value;
-    const goal = document.getElementById("goal").value;
-    const fundingPeriod = document.getElementById("fundingPeriod").value;
-    const term = document.getElementById("term").value;
-    const current = document.getElementById("current").value;
-    const growthRate = document.getElementById("growthRate").value;
+    document.querySelectorAll('input[name="ready"], input[name="halal"]').forEach(el => {
+      el.addEventListener('change', () => {
+        const ready = document.querySelector('input[name="ready"]:checked')?.value;
+        const halal = document.querySelector('input[name="halal"]:checked')?.value;
+        const contactSection = document.getElementById('contactFields');
 
-    const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek help to plan. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nFunding Period: ${fundingPeriod}\nGoal: $${goal}`;
-    window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
-  }
-</script>
+        if (ready === 'yes' && halal === 'yes') {
+          contactSection.classList.remove('hidden');
+        } else {
+          contactSection.classList.add('hidden');
+        }
+      });
+    });
+
+    document.getElementById('userName').addEventListener('input', validateForm);
+    document.getElementById('userPhone').addEventListener('input', validateForm);
+
+    function validateForm() {
+      const name = document.getElementById('userName').value.trim();
+      const phone = document.getElementById('userPhone').value.trim();
+      const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
+      document.getElementById('submitDetails').disabled = !(name.length > 0 && phoneRegex.test(phone));
+    }
+
+    function formatCurrency(value) {
+      return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function calculate() {
+      const birthYear = parseInt(document.getElementById("birthYear").value);
+      const birthMonth = parseInt(document.getElementById("birthMonth").value);
+      const goal = parseFloat(document.getElementById("goal").value);
+      const fundingPeriod = parseInt(document.getElementById("fundingPeriod").value);
+      const term = parseInt(document.getElementById("term").value);
+      const current = parseFloat(document.getElementById("current").value || 0);
+      const growthRate = parseFloat(document.getElementById("growthRate").value);
+      const roi = growthRate / 100 / 12;
+      const months = fundingPeriod * 12;
+
+      const FV_current = current * Math.pow(1 + roi, months);
+      const PMT = (goal - FV_current) * roi / (Math.pow(1 + roi, months) - 1);
+
+      const totalInvested = PMT * months;
+      const futureValue = totalInvested + FV_current;
+      const profitEarned = futureValue - totalInvested - current;
+
+      const today = new Date();
+      const birthDate = new Date(birthYear, birthMonth, 1);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      if (today.getMonth() < birthDate.getMonth()) age--;
+
+      const withdrawalAge = age + term + 1;
+
+      document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
+      document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
+      document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
+      document.getElementById("finalPopup").innerText = formatCurrency(futureValue);
+      document.getElementById("withdrawalPopup").innerText = withdrawalAge;
+      document.getElementById("popupResults").classList.remove('hidden');
+    }
+
+    function restartForm() {
+      document.getElementById("calcForm").reset();
+      document.getElementById("popupResults").classList.add('hidden');
+    }
+
+    function proceedWithForm() {
+      document.getElementById("popupResults").classList.add('hidden');
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function submitForm() {
+      const name = document.getElementById('userName').value.trim();
+      const phone = document.getElementById('userPhone').value.trim();
+      const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
+      if (!phoneRegex.test(phone)) {
+        alert("Invalid phone number format. Please enter a valid Singapore number.");
+        return;
+      }
+
+      const birthYear = document.getElementById("birthYear").value;
+      const birthMonth = document.getElementById("birthMonth").value;
+      const goal = document.getElementById("goal").value;
+      const fundingPeriod = document.getElementById("fundingPeriod").value;
+      const term = document.getElementById("term").value;
+      const current = document.getElementById("current").value;
+      const growthRate = document.getElementById("growthRate").value;
+
+      const body = Name: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nFunding Period: ${fundingPeriod}\nGoal: $${goal};
+
+      window.location.href = mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)};
+    }
+  </script>
 </body>
 </html>
