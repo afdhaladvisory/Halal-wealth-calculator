@@ -76,6 +76,28 @@
       margin-top: 1rem;
     }
     .hidden { display: none; }
+    .popup {
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 1px solid #ccc;
+      padding: 2rem;
+      width: 80%;
+      max-width: 600px;
+      z-index: 1000;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .popup button {
+      width: 45%;
+    }
+    .popup-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -108,19 +130,19 @@
         </select>
       </div>
       <div class="form-row">
-        <label>Investment Term (Years):</label>
-        <select id="term">
-          <option value="10">10</option>
-          <option value="15" selected>15</option>
-          <option value="20">20</option>
-        </select>
-      </div>
-      <div class="form-row">
         <label>Expected Funding Period (Years):</label>
         <select id="fundingPeriod">
           <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option>
           <option value="10" selected>10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option>
           <option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Investment Term (Years):</label>
+        <select id="term">
+          <option value="10">10</option>
+          <option value="15" selected>15</option>
+          <option value="20">20</option>
         </select>
       </div>
       <div class="form-row">
@@ -130,13 +152,17 @@
       <button type="button" onclick="calculate()">Calculate</button>
     </form>
 
-    <div id="results" style="display:none;">
+    <div id="popupResults" class="popup hidden">
       <h3>Results</h3>
-      <div class="result-row">Amount Needed Monthly: <span id="monthly">$0.00</span></div>
-      <div class="result-row" id="investedRow">Amount Invested in Total: <span id="invested">$0.00</span></div>
-      <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
-      <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
-      <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
+      <div class="result-row">Amount Needed Monthly: <span id="monthlyPopup">$0.00</span></div>
+      <div class="result-row">Amount Invested in Total: <span id="investedPopup">$0.00</span></div>
+      <div class="result-row">Profit Earned: <span id="interestPopup">$0.00</span></div>
+      <div class="result-row">Estimated Final Value: <span id="finalPopup">$0.00</span></div>
+      <div class="result-row">Withdrawal Age: <span id="withdrawalPopup">-</span></div>
+      <div class="popup-buttons">
+        <button onclick="restartForm()">Restart</button>
+        <button onclick="proceedWithForm()">Seek Advise Today</button>
+      </div>
     </div>
 
     <div class="box-section">
@@ -232,12 +258,22 @@
 
       const withdrawalAge = age + term + 1;
 
-      document.getElementById("monthly").innerText = formatCurrency(PMT);
-      document.getElementById("invested").innerText = formatCurrency(totalInvested);
-      document.getElementById("interest").innerText = formatCurrency(profitEarned);
-      document.getElementById("final").innerText = formatCurrency(futureValue);
-      document.getElementById("withdrawal").innerText = withdrawalAge;
-      document.getElementById("results").style.display = 'block';
+      document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
+      document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
+      document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
+      document.getElementById("finalPopup").innerText = formatCurrency(futureValue);
+      document.getElementById("withdrawalPopup").innerText = withdrawalAge;
+      document.getElementById("popupResults").classList.remove('hidden');
+    }
+
+    function restartForm() {
+      document.getElementById("calcForm").reset();
+      document.getElementById("popupResults").classList.add('hidden');
+    }
+
+    function proceedWithForm() {
+      document.getElementById("popupResults").classList.add('hidden');
+      window.scrollTo(0, document.body.scrollHeight);
     }
 
     function submitForm() {
@@ -245,7 +281,7 @@
       const phone = document.getElementById('userPhone').value.trim();
       const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
       if (!phoneRegex.test(phone)) {
-        alert("Invalid phone number format.");
+        alert("Invalid phone number format. Please enter a valid Singapore number.");
         return;
       }
 
