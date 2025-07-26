@@ -72,25 +72,10 @@
       margin-top: 1rem;
       border-radius: 8px;
     }
-    #results {
-      position: fixed;
-      top: 10%;
-      left: 10%;
-      width: 80%;
-      height: 80%;
-      background: white;
-      padding: 2rem;
-      overflow-y: auto;
-      z-index: 9999;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      border-radius: 10px;
-    }
-    .popup-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
+    .contact-fields {
       margin-top: 1rem;
     }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -152,20 +137,9 @@
       <div class="result-row">Profit Earned: <span id="interest">$0.00</span></div>
       <div class="result-row">Estimated Final Value: <span id="final">$0.00</span></div>
       <div class="result-row">Withdrawal Age: <span id="withdrawal">-</span></div>
-      <div class="popup-buttons">
-        <button onclick="resetCalculator()">Clear</button>
-        <button onclick="collectContact()">Seek Advise Today</button>
-      </div>
     </div>
 
     <div class="box-section">
-      <div class="form-row">
-        <label>Are You Ready To Take Action Today?</label>
-        <div class="form-radio">
-          <label><input type="radio" name="ready" value="yes"> Yes</label>
-          <label><input type="radio" name="ready" value="no"> No</label>
-        </div>
-      </div>
       <div class="form-row">
         <label>Is Halal Returns Important To You?</label>
         <div class="form-radio">
@@ -173,7 +147,24 @@
           <label><input type="radio" name="halal" value="no"> No</label>
         </div>
       </div>
-      <button id="adviseBtn" onclick="window.location.href='https://afdhaladvisory.com/contact/'" disabled>Seek Advise Today</button>
+      <div class="form-row">
+        <label>Are You Ready To Take Action Today?</label>
+        <div class="form-radio">
+          <label><input type="radio" name="ready" value="yes"> Yes</label>
+          <label><input type="radio" name="ready" value="no"> No</label>
+        </div>
+      </div>
+      <div id="contactFields" class="contact-fields hidden">
+        <div class="form-row">
+          <label>Your Name:</label>
+          <input type="text" id="userName">
+        </div>
+        <div class="form-row">
+          <label>Phone Number:</label>
+          <input type="text" id="userPhone">
+        </div>
+        <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
+      </div>
     </div>
   </div>
 
@@ -192,9 +183,25 @@
       el.addEventListener('change', () => {
         const ready = document.querySelector('input[name="ready"]:checked')?.value;
         const halal = document.querySelector('input[name="halal"]:checked')?.value;
-        document.getElementById('adviseBtn').disabled = !(ready === 'yes' && halal === 'yes');
+        const contactSection = document.getElementById('contactFields');
+
+        if (ready === 'yes' && halal === 'yes') {
+          contactSection.classList.remove('hidden');
+        } else {
+          contactSection.classList.add('hidden');
+        }
       });
     });
+
+    document.getElementById('userName').addEventListener('input', validateForm);
+    document.getElementById('userPhone').addEventListener('input', validateForm);
+
+    function validateForm() {
+      const name = document.getElementById('userName').value.trim();
+      const phone = document.getElementById('userPhone').value.trim();
+      const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
+      document.getElementById('submitDetails').disabled = !(name.length > 0 && phoneRegex.test(phone));
+    }
 
     function formatCurrency(value) {
       return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -233,17 +240,13 @@
       document.getElementById("results").style.display = 'block';
     }
 
-    function resetCalculator() {
-      document.getElementById("calcForm").reset();
-      document.getElementById("results").style.display = 'none';
-    }
-
-    function collectContact() {
-      const name = prompt("Enter your name:");
-      let phone = prompt("Enter your SG phone number:");
+    function submitForm() {
+      const name = document.getElementById('userName').value.trim();
+      const phone = document.getElementById('userPhone').value.trim();
       const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
-      while (!phoneRegex.test(phone)) {
-        phone = prompt("Invalid format. Enter a valid SG phone number:");
+      if (!phoneRegex.test(phone)) {
+        alert("Invalid phone number format.");
+        return;
       }
 
       const birthYear = document.getElementById("birthYear").value;
