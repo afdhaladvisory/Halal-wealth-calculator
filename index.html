@@ -82,6 +82,10 @@
       display: flex;
       justify-content: space-between;
       margin-top: 1rem;
+      gap: 10px;
+    }
+    .popup-buttons button {
+      transform: scale(0.75);
     }
     .close-btn {
       position: absolute;
@@ -104,6 +108,25 @@
       backdrop-filter: blur(4px);
       z-index: 1000;
       display: none;
+    }
+    /* Contact Popup Adjustments */
+    #contactPopup .form-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #contactPopup input[type="radio"] {
+      margin-left: 5px;
+    }
+    .radio-group {
+      display: flex;
+      gap: 20px;
+    }
+    /* Error Popup */
+    #errorPopup button {
+      width: auto;
+      padding: 8px 20px;
+      transform: scale(0.85);
     }
   </style>
 </head>
@@ -171,12 +194,13 @@
     <span class="close-btn" onclick="closePopup()">✖</span>
     <h3>Results</h3>
     <div class="result-row">Current Age: <span id="agePopup">-</span></div>
-    <div class="result-row">Investment Duration (months): <span id="durationPopup">-</span></div>
+    <div class="result-row">Investment Duration (Years): <span id="durationPopup">-</span></div>
     <div class="result-row">Amount Needed Monthly: <span id="monthlyPopup">$0.00</span></div>
     <div class="result-row">Amount Invested in Total: <span id="investedPopup">$0.00</span></div>
     <div class="result-row">Profit Earned: <span id="interestPopup">$0.00</span></div>
     <div class="result-row">Estimated Final Value: <span id="finalPopup">$0.00</span></div>
     <div class="result-row">Withdrawal Age: <span id="withdrawalPopup">-</span></div>
+    <div class="result-row">Annual/Yearly Premium: <span id="annualPopup">$0.00</span></div>
     <div class="result-row">Enough funding for first year?: <span id="enoughFunding"></span></div>
     <div class="popup-buttons">
       <button onclick="restartForm()">Restart</button>
@@ -188,31 +212,41 @@
   <div id="contactPopup" class="popup hidden">
     <span class="close-btn" onclick="closeContactPopup()">✖</span>
     <h3>Contact Details</h3>
+
     <div class="form-row">
       <label>Is Halal Returns Important To You?</label>
-      <div>
+      <div class="radio-group">
         <label><input type="radio" name="halal" value="yes"> Yes</label>
         <label><input type="radio" name="halal" value="no"> No</label>
       </div>
     </div>
+
     <div class="form-row">
       <label>Are You Ready To Take Action Today?</label>
-      <div>
+      <div class="radio-group">
         <label><input type="radio" name="ready" value="yes"> Yes</label>
         <label><input type="radio" name="ready" value="no"> No</label>
       </div>
     </div>
-    <div id="contactFields" class="contact-fields hidden">
-      <div class="form-row">
-        <label>Your Name:</label>
-        <input type="text" id="userName">
-      </div>
-      <div class="form-row">
-        <label>Phone Number:</label>
-        <input type="text" id="userPhone">
-      </div>
-      <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
+
+    <div class="form-row">
+      <label>Your Name:</label>
+      <input type="text" id="userName">
     </div>
+
+    <div class="form-row">
+      <label>Phone Number:</label>
+      <input type="text" id="userPhone">
+    </div>
+
+    <button id="submitDetails" onclick="submitForm()">Submit Details</button>
+  </div>
+
+  <!-- Error Popup -->
+  <div id="errorPopup" class="popup hidden">
+    <h3 style="color: red;">Error</h3>
+    <p id="errorMsg">Invalid input detected.</p>
+    <button onclick="returnToContact()">Go Back</button>
   </div>
 
 <script>
@@ -225,30 +259,6 @@
     opt.text = y;
     if (y === 1995) opt.selected = true;
     yearSelect.appendChild(opt);
-  }
-
-  // Contact field toggle
-  document.querySelectorAll('input[name="ready"], input[name="halal"]').forEach(el => {
-    el.addEventListener('change', () => {
-      const ready = document.querySelector('input[name="ready"]:checked')?.value;
-      const halal = document.querySelector('input[name="halal"]:checked')?.value;
-      const contactSection = document.getElementById('contactFields');
-      if (ready === 'yes' && halal === 'yes') {
-        contactSection.classList.remove('hidden');
-      } else {
-        contactSection.classList.add('hidden');
-      }
-    });
-  });
-
-  document.getElementById('userName').addEventListener('input', validateForm);
-  document.getElementById('userPhone').addEventListener('input', validateForm);
-
-  function validateForm() {
-    const name = document.getElementById('userName').value.trim();
-    const phone = document.getElementById('userPhone').value.trim();
-    const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
-    document.getElementById('submitDetails').disabled = !(name.length > 0 && phoneRegex.test(phone));
   }
 
   function formatCurrency(value) {
@@ -277,6 +287,9 @@
     const totalInvested = PMT * months;
     const profitEarned = goal - totalInvested;
 
+    // Annual premium
+    const annualPremium = PMT * 12;
+
     // Enough funding for first year?
     const enoughFundingEl = document.getElementById("enoughFunding");
     if ((PMT * 12) <= current) {
@@ -286,12 +299,13 @@
     }
 
     document.getElementById("agePopup").innerText = age;
-    document.getElementById("durationPopup").innerText = months;
+    document.getElementById("durationPopup").innerText = term;
     document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
     document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
     document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
     document.getElementById("finalPopup").innerText = formatCurrency(goal);
     document.getElementById("withdrawalPopup").innerText = age + term + 1;
+    document.getElementById("annualPopup").innerText = formatCurrency(annualPremium);
 
     document.getElementById("overlay").style.display = 'block';
     document.getElementById("popupResults").classList.remove('hidden');
@@ -301,6 +315,7 @@
   document.getElementById('overlay').addEventListener('click', () => {
     closePopup();
     closeContactPopup();
+    closeErrorPopup();
   });
 
   function closePopup() {
@@ -327,8 +342,9 @@
     const name = document.getElementById('userName').value.trim();
     const phone = document.getElementById('userPhone').value.trim();
     const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
+
     if (!phoneRegex.test(phone)) {
-      alert("Invalid phone number format. Please enter a valid Singapore number.");
+      showError("Invalid phone number format. Please enter a valid Singapore number.");
       return;
     }
 
@@ -342,6 +358,22 @@
     const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek help to plan. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare Cash: $${current}\nGrowth Rate: ${growthRate}%\nInvestment Term: ${term}\nGoal: $${goal}`;
 
     window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Retirement%20Calculator%20Submission&body=${encodeURIComponent(body)}`;
+  }
+
+  // ERROR POPUP
+  function showError(message) {
+    document.getElementById('contactPopup').classList.add('hidden');
+    document.getElementById('errorMsg').innerText = message;
+    document.getElementById('errorPopup').classList.remove('hidden');
+  }
+
+  function closeErrorPopup() {
+    document.getElementById('errorPopup').classList.add('hidden');
+  }
+
+  function returnToContact() {
+    document.getElementById('errorPopup').classList.add('hidden');
+    document.getElementById('contactPopup').classList.remove('hidden');
   }
 </script>
 </body>
