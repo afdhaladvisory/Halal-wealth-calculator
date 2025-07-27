@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
-
     body {
       font-family: 'Montserrat', sans-serif;
       background-color: #2b3e37;
@@ -90,22 +89,24 @@
       background: white;
       border: 1px solid #ccc;
       padding: 2rem;
-      width: 75%;
-      max-width: 600px;
+      width: 90%;
+      max-width: 700px;
       z-index: 1001;
       border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       text-align: center;
       font-family: 'Montserrat', sans-serif;
+      overflow-y: auto;
+      max-height: 90vh;
     }
     .popup-buttons {
       display: flex;
-      justify-content: space-between;
-      margin-top: 1rem;
+      flex-direction: column;
       gap: 10px;
+      margin-top: 1rem;
     }
     .popup-buttons button {
-      width: 75%;
+      width: 100%;
     }
     .close-btn {
       position: absolute;
@@ -129,21 +130,45 @@
       z-index: 1000;
       display: none;
     }
-    #contactPopup .form-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
+    @media (max-width: 480px) {
+      .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .form-row label {
+        width: 100%;
+      }
+      .form-row input,
+      .form-row select {
+        width: 100%;
+      }
     }
-    .radio-group {
+    #scheduleTabs {
       display: flex;
-      gap: 20px;
+      justify-content: center;
+      margin-bottom: 10px;
+      gap: 1rem;
     }
-    .radio-group input[type="radio"] {
-      accent-color: #2b3e37;
+    #scheduleTabs button {
+      background: #f0f0f0;
+      color: #2b3e37;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 5px;
     }
-    .dimmed {
-      opacity: 0.4;
-      pointer-events: none;
+    #scheduleTable {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+    }
+    #scheduleTable th, #scheduleTable td {
+      border: 1px solid #ccc;
+      padding: 5px;
+      font-size: 0.9em;
+    }
+    #scheduleTable th {
+      background: #2b3e37;
+      color: white;
     }
   </style>
 </head>
@@ -155,25 +180,18 @@
       <div class="form-row">
         <label>Month & Year Born:</label>
         <div style="width: 45%; display: flex; gap: 5px;">
-          <select id="birthMonth">
-            <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option><option value="3">Apr</option>
-            <option value="4">May</option><option value="5">Jun</option><option value="6">Jul</option><option value="7">Aug</option>
-            <option value="8">Sep</option><option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
-          </select>
+          <select id="birthMonth"></select>
           <select id="birthYear"></select>
         </div>
       </div>
-
       <div class="form-row">
         <label>Spare/Idle Cash ($):</label>
         <input type="number" id="current" value="50000">
       </div>
-
       <div class="form-row">
         <label>How Much Do You Need? ($):</label>
         <input type="number" id="goal" value="200000">
       </div>
-
       <div class="form-row">
         <label>Investment Term (Years):</label>
         <select id="term">
@@ -182,7 +200,6 @@
           <option value="20">20</option>
         </select>
       </div>
-
       <div class="form-row">
         <label>Growth Rate Projection (%):</label>
         <select id="growthRate">
@@ -192,7 +209,6 @@
           <option value="8" selected>8</option>
         </select>
       </div>
-
       <button type="button" onclick="calculate()">Calculate</button>
     </form>
   </div>
@@ -200,7 +216,7 @@
   <div id="overlay" class="overlay"></div>
 
   <div id="popupResults" class="popup hidden">
-    <span class="close-btn" onclick="closePopup()">✖</span>
+    <span class="close-btn" onclick="closePopup()">&times;</span>
     <h3 style="color:#2b3e37;">Results</h3>
     <div class="result-row">Current Age: <span id="agePopup">-</span></div>
     <div class="result-row">Investment Duration (Years): <span id="durationPopup">-</span></div>
@@ -213,203 +229,136 @@
     <div class="result-row">Enough funding for first year?: <span id="enoughFunding"></span></div>
     <div class="popup-buttons">
       <button onclick="restartForm()">Restart</button>
-      <button onclick="openContactPopup()">Seek Advise Today</button>
+      <button onclick="openSchedulePopup()">Projected Schedule</button>
+      <button onclick="openContactPopup()">Seek Advice Today</button>
     </div>
   </div>
 
-  <div id="contactPopup" class="popup hidden">
-    <span class="close-btn" onclick="closeContactPopup()">✖</span>
-    <h3 style="color:#2b3e37;">Contact Details</h3>
-
-    <div class="form-row">
-      <label>Is Halal Returns Important To You?</label>
-      <div class="radio-group">
-        <label><input type="radio" name="halal" value="yes"> Yes</label>
-        <label><input type="radio" name="halal" value="no"> No</label>
-      </div>
+  <div id="schedulePopup" class="popup hidden">
+    <span class="close-btn" onclick="closeSchedulePopup()">&times;</span>
+    <h3>Accumulation Schedule</h3>
+    <div id="scheduleTabs">
+      <button onclick="renderSchedule('monthly')">Monthly</button>
+      <button onclick="renderSchedule('annual')">Annual</button>
     </div>
-
-    <div class="form-row">
-      <label>Are You Ready To Take Action Today?</label>
-      <div class="radio-group">
-        <label><input type="radio" name="ready" value="yes" onclick="readyYes()"> Yes</label>
-        <label><input type="radio" name="ready" value="no" onclick="readyNo()"> No</label>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <label>Your Name:</label>
-      <input type="text" id="userName" oninput="checkFormValidity()">
-    </div>
-
-    <div class="form-row">
-      <label>Phone Number:</label>
-      <input type="text" id="userPhone" oninput="checkFormValidity()">
-    </div>
-
-    <div class="popup-buttons">
-      <button onclick="backToResults()">⬅ Back</button>
-      <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
-    </div>
+    <div id="scheduleTableContainer"></div>
   </div>
 
-  <div id="errorPopup" class="popup hidden">
-    <h3 style="color: red;">Notice</h3>
-    <p id="errorMsg">Invalid input detected.</p>
-    <button onclick="returnToContact()">Go Back</button>
-  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const yearSelect = document.getElementById('birthYear');
+      const monthSelect = document.getElementById('birthMonth');
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear - 80; y <= currentYear; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.text = y;
+        if (y === 1995) opt.selected = true;
+        yearSelect.appendChild(opt);
+      }
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      months.forEach((m, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.text = m;
+        if (i === 0) opt.selected = true;
+        monthSelect.appendChild(opt);
+      });
+    });
 
-<script>
-  const yearSelect = document.getElementById('birthYear');
-  const currentYear = new Date().getFullYear();
-  for (let y = currentYear - 80; y <= currentYear; y++) {
-    const opt = document.createElement('option');
-    opt.value = y;
-    opt.text = y;
-    if (y === 1995) opt.selected = true;
-    yearSelect.appendChild(opt);
-  }
-
-  function formatCurrency(value) {
-    return "$" + value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
-  }
-
-  function calculate() {
-    const birthYear = parseInt(document.getElementById("birthYear").value);
-    const birthMonth = parseInt(document.getElementById("birthMonth").value);
-    const goal = parseFloat(document.getElementById("goal").value);
-    const term = parseInt(document.getElementById("term").value);
-    const current = parseFloat(document.getElementById("current").value || 0);
-    const growthRate = parseFloat(document.getElementById("growthRate").value);
-
-    const roi = growthRate / 100 / 12;
-    const months = term * 12;
-
-    const today = new Date();
-    const birthDate = new Date(birthYear, birthMonth, 1);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    if (today.getMonth() < birthDate.getMonth()) age--;
-
-    const PMT = goal * roi / ((Math.pow(1 + roi, months) - 1) * (1 + roi));
-    const totalInvested = PMT * months;
-    const profitEarned = goal - totalInvested;
-    const annualPremium = PMT * 12;
-
-    const enoughFundingEl = document.getElementById("enoughFunding");
-    if ((PMT * 12) <= current) {
-      enoughFundingEl.innerHTML = '<span class="green-text">Yes</span>';
-    } else {
-      enoughFundingEl.innerHTML = '<span class="red-text">No</span>';
+    function formatCurrency(value) {
+      return "$" + value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
-    document.getElementById("agePopup").innerText = age;
-    document.getElementById("durationPopup").innerText = term;
-    document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
-    document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
-    document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
-    document.getElementById("finalPopup").innerText = formatCurrency(goal);
-    document.getElementById("withdrawalPopup").innerText = age + term + 1;
-    document.getElementById("annualPopup").innerText = formatCurrency(annualPremium);
-
-    document.getElementById("overlay").style.display = 'block';
-    document.getElementById("popupResults").classList.remove('hidden');
-  }
-
-  document.getElementById('overlay').addEventListener('click', () => {
-    closePopup();
-    closeContactPopup();
-    closeErrorPopup();
-  });
-
-  function closePopup() {
-    document.getElementById("popupResults").classList.add('hidden');
-    document.getElementById("overlay").style.display = 'none';
-  }
-
-  function restartForm() {
-    document.getElementById("calcForm").reset();
-    closePopup();
-  }
-
-  function openContactPopup() {
-    document.getElementById("popupResults").classList.add('hidden');
-    document.getElementById("contactPopup").classList.remove('hidden');
-  }
-
-  function backToResults() {
-    document.getElementById("contactPopup").classList.add('hidden');
-    document.getElementById("popupResults").classList.remove('hidden');
-  }
-
-  function closeContactPopup() {
-    document.getElementById("contactPopup").classList.add('hidden');
-    document.getElementById("overlay").style.display = 'none';
-  }
-
-  function readyNo() {
-    showError("Everyone has their time and we understand, but only when you are ready will be the best time for us to contact you");
-    document.getElementById('submitDetails').disabled = true;
-  }
-
-  function readyYes() {
-    closeErrorPopup();
-    checkFormValidity();
-  }
-
-  function checkFormValidity() {
-    const halal = document.querySelector('input[name="halal"]:checked');
-    const ready = document.querySelector('input[name="ready"]:checked');
-    const name = document.getElementById('userName').value.trim();
-    const phone = document.getElementById('userPhone').value.trim();
-    document.getElementById('submitDetails').disabled = !(halal && ready && name && phone);
-  }
-
-  function submitForm() {
-    const name = document.getElementById('userName').value.trim();
-    const phone = document.getElementById('userPhone').value.trim();
-    const phoneRegex = /^\+65[689]\d{7}$|^[689]\d{7}$/;
-
-    if (!phoneRegex.test(phone)) {
-      showError("Invalid phone number format. Please enter a valid Singapore number.");
-      return;
+    function validateInputs(goal, term, current) {
+      return goal > 0 && term > 0 && current >= 0;
     }
 
-    const birthYear = document.getElementById("birthYear").value;
-    const birthMonth = document.getElementById("birthMonth").value;
-    const goal = document.getElementById("goal").value;
-    const term = document.getElementById("term").value;
-    const current = document.getElementById("current").value;
-    const growthRate = document.getElementById("growthRate").value;
+    function calculate() {
+      const birthYear = parseInt(document.getElementById("birthYear").value);
+      const birthMonth = parseInt(document.getElementById("birthMonth").value);
+      const goal = parseFloat(document.getElementById("goal").value);
+      const term = parseInt(document.getElementById("term").value);
+      const current = parseFloat(document.getElementById("current").value || 0);
+      const growthRate = parseFloat(document.getElementById("growthRate").value);
 
-    const monthly = document.getElementById("monthlyPopup").innerText;
-    const invested = document.getElementById("investedPopup").innerText;
-    const profit = document.getElementById("interestPopup").innerText;
-    const finalVal = document.getElementById("finalPopup").innerText;
-    const withdrawalAge = document.getElementById("withdrawalPopup").innerText;
-    const annual = document.getElementById("annualPopup").innerText;
-    const enough = document.getElementById("enoughFunding").innerText;
+      if (!validateInputs(goal, term, current)) {
+        alert("Please enter valid investment inputs.");
+        return;
+      }
 
-    const body = `Assalamualaikum, I am keen to understand more what Afdhal Advisory has to offer and seek your expertise and help to plan my future. Details below:\n\nName: ${name}\nPhone: ${phone}\nMonth/Year Born: ${parseInt(birthMonth)+1}/${birthYear}\nSpare/Idle Cash ($): $${current}\n\n--- RESULTS ---\nAmount Needed Monthly: ${monthly}\nAmount Invested in Total: ${invested}\nProfit Earned: ${profit}\nEstimated Final Value: ${finalVal}\nWithdrawal Age: ${withdrawalAge}\nAnnual/Yearly Premium: ${annual}\nEnough funding for first year?: ${enough}`;
+      const roi = growthRate / 100 / 12;
+      const months = term * 12;
+      const today = new Date();
+      const birthDate = new Date(birthYear, birthMonth, 1);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      if (today.getMonth() < birthDate.getMonth()) age--;
 
-    window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Islamic%20Investment%20Submission%20-%20${name}&body=${encodeURIComponent(body)}`;
-  }
+      const PMT = goal * roi / ((Math.pow(1 + roi, months) - 1) * (1 + roi));
+      const totalInvested = PMT * months;
+      const profitEarned = goal - totalInvested;
+      const annualPremium = PMT * 12;
 
-  function showError(message) {
-    document.getElementById('contactPopup').classList.add('dimmed');
-    document.getElementById('errorMsg').innerText = message;
-    document.getElementById('errorPopup').classList.remove('hidden');
-  }
+      document.getElementById("agePopup").innerText = age;
+      document.getElementById("durationPopup").innerText = term;
+      document.getElementById("monthlyPopup").innerText = formatCurrency(PMT);
+      document.getElementById("investedPopup").innerText = formatCurrency(totalInvested);
+      document.getElementById("interestPopup").innerText = formatCurrency(profitEarned);
+      document.getElementById("finalPopup").innerText = formatCurrency(goal);
+      document.getElementById("withdrawalPopup").innerText = age + term;
+      document.getElementById("annualPopup").innerText = formatCurrency(annualPremium);
+      document.getElementById("enoughFunding").innerHTML = (annualPremium <= current)
+        ? '<span class="green-text">Yes</span>'
+        : '<span class="red-text">No</span>';
 
-  function closeErrorPopup() {
-    document.getElementById('errorPopup').classList.add('hidden');
-    document.getElementById('contactPopup').classList.remove('dimmed');
-  }
+      localStorage.setItem("lastResult", JSON.stringify({ age, term, PMT, totalInvested, profitEarned, goal, withdrawalAge: age + term, annualPremium }));
 
-  function returnToContact() {
-    document.getElementById('errorPopup').classList.add('hidden');
-    document.getElementById('contactPopup').classList.remove('dimmed');
-    document.getElementById('contactPopup').classList.remove('hidden');
-  }
-</script>
+      document.getElementById("overlay").style.display = 'block';
+      document.getElementById("popupResults").classList.remove('hidden');
+    }
+
+    function closePopup() {
+      document.getElementById("popupResults").classList.add('hidden');
+      document.getElementById("overlay").style.display = 'none';
+    }
+
+    function restartForm() {
+      document.getElementById("calcForm").reset();
+      closePopup();
+    }
+
+    function openSchedulePopup() {
+      document.getElementById("popupResults").classList.add('hidden');
+      document.getElementById("schedulePopup").classList.remove('hidden');
+      renderSchedule('monthly');
+    }
+
+    function closeSchedulePopup() {
+      document.getElementById("schedulePopup").classList.add('hidden');
+      document.getElementById("overlay").style.display = 'none';
+    }
+
+    function renderSchedule(type) {
+      const data = JSON.parse(localStorage.getItem("lastResult"));
+      if (!data) return;
+      let html = '<table id="scheduleTable"><tr>';
+      html += type === 'monthly'
+        ? '<th>Month</th><th>Contribution</th><th>Accumulated</th>'
+        : '<th>Year</th><th>Total Contributed</th><th>Accumulated</th>';
+      html += '</tr>';
+
+      let accumulated = 0;
+      let contribution = data.PMT;
+      let rows = type === 'monthly' ? data.term * 12 : data.term;
+
+      for (let i = 1; i <= rows; i++) {
+        accumulated = accumulated * (1 + (parseFloat(document.getElementById("growthRate").value) / 100 / (type === 'monthly' ? 12 : 1))) + contribution * (type === 'monthly' ? 1 : 12);
+        html += `<tr><td>${i}</td><td>${formatCurrency(type === 'monthly' ? contribution : contribution * 12)}</td><td>${formatCurrency(accumulated)}</td></tr>`;
+      }
+
+      html += '</table>';
+      document.getElementById("scheduleTableContainer").innerHTML = html;
+    }
+  </script>
 </body>
 </html>
