@@ -39,16 +39,14 @@
     }
     .form-row input,
     .form-row select {
-      width: 45%;
-      padding: 8px;
-      text-align: center;
-    }
-    input[type="text"],
-    input[type="number"],
-    select {
       width: 100%;
       padding: 8px;
+      text-align: center;
       box-sizing: border-box;
+    }
+    .form-row select#birthMonth,
+    .form-row select#birthYear {
+      width: auto;
     }
     button {
       background: #2b3e37;
@@ -72,16 +70,16 @@
     .result-row {
       display: flex;
       justify-content: space-between;
-      margin: 5px 0;
       align-items: center;
+      margin: 8px 0;
     }
     .result-row span {
       background: #f0f0f0;
-      padding: 5px 10px;
-      border-radius: 4px;
-      min-width: 180px;
-      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 5px;
+      width: 200px;
       text-align: center;
+      font-weight: 600;
     }
     .hidden { display: none; }
     .popup {
@@ -154,7 +152,6 @@
     <img src="logo.png" alt="Logo" class="logo">
     <h2>Investment Goal Calculator</h2>
     <form id="calcForm">
-      <!-- Month & Year Born -->
       <div class="form-row">
         <label>Month & Year Born:</label>
         <div style="width: 45%; display: flex; gap: 5px;">
@@ -167,19 +164,16 @@
         </div>
       </div>
 
-      <!-- Spare/Idle Cash -->
       <div class="form-row">
         <label>Spare/Idle Cash ($):</label>
         <input type="number" id="current" value="50000">
       </div>
 
-      <!-- How Much Do You Need -->
       <div class="form-row">
         <label>How Much Do You Need? ($):</label>
         <input type="number" id="goal" value="200000">
       </div>
 
-      <!-- Investment Term -->
       <div class="form-row">
         <label>Investment Term (Years):</label>
         <select id="term">
@@ -189,7 +183,6 @@
         </select>
       </div>
 
-      <!-- Growth Rate Projection -->
       <div class="form-row">
         <label>Growth Rate Projection (%):</label>
         <select id="growthRate">
@@ -204,10 +197,8 @@
     </form>
   </div>
 
-  <!-- Overlay -->
   <div id="overlay" class="overlay"></div>
 
-  <!-- Results Popup -->
   <div id="popupResults" class="popup hidden">
     <span class="close-btn" onclick="closePopup()">✖</span>
     <h3 style="color:#2b3e37;">Results</h3>
@@ -226,7 +217,6 @@
     </div>
   </div>
 
-  <!-- Contact Form Popup -->
   <div id="contactPopup" class="popup hidden">
     <span class="close-btn" onclick="closeContactPopup()">✖</span>
     <h3 style="color:#2b3e37;">Contact Details</h3>
@@ -249,21 +239,20 @@
 
     <div class="form-row">
       <label>Your Name:</label>
-      <input type="text" id="userName">
+      <input type="text" id="userName" oninput="checkFormValidity()">
     </div>
 
     <div class="form-row">
       <label>Phone Number:</label>
-      <input type="text" id="userPhone">
+      <input type="text" id="userPhone" oninput="checkFormValidity()">
     </div>
 
     <div class="popup-buttons">
       <button onclick="backToResults()">⬅ Back</button>
-      <button id="submitDetails" onclick="submitForm()">Submit Details</button>
+      <button id="submitDetails" onclick="submitForm()" disabled>Submit Details</button>
     </div>
   </div>
 
-  <!-- Error Popup -->
   <div id="errorPopup" class="popup hidden">
     <h3 style="color: red;">Notice</h3>
     <p id="errorMsg">Invalid input detected.</p>
@@ -296,13 +285,11 @@
     const roi = growthRate / 100 / 12;
     const months = term * 12;
 
-    // Calculate Current Age
     const today = new Date();
     const birthDate = new Date(birthYear, birthMonth, 1);
     let age = today.getFullYear() - birthDate.getFullYear();
     if (today.getMonth() < birthDate.getMonth()) age--;
 
-    // annuity due formula
     const PMT = goal * roi / ((Math.pow(1 + roi, months) - 1) * (1 + roi));
     const totalInvested = PMT * months;
     const profitEarned = goal - totalInvested;
@@ -328,7 +315,6 @@
     document.getElementById("popupResults").classList.remove('hidden');
   }
 
-  // POPUP MANAGEMENT
   document.getElementById('overlay').addEventListener('click', () => {
     closePopup();
     closeContactPopup();
@@ -360,17 +346,24 @@
     document.getElementById("overlay").style.display = 'none';
   }
 
-  // READY LOGIC
   function readyNo() {
     showError("Everyone has their time and we understand, but only when you are ready will be the best time for us to contact you");
     document.getElementById('submitDetails').disabled = true;
   }
+
   function readyYes() {
     closeErrorPopup();
-    document.getElementById('submitDetails').disabled = false;
+    checkFormValidity();
   }
 
-  // SUBMIT FORM
+  function checkFormValidity() {
+    const halal = document.querySelector('input[name="halal"]:checked');
+    const ready = document.querySelector('input[name="ready"]:checked');
+    const name = document.getElementById('userName').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
+    document.getElementById('submitDetails').disabled = !(halal && ready && name && phone);
+  }
+
   function submitForm() {
     const name = document.getElementById('userName').value.trim();
     const phone = document.getElementById('userPhone').value.trim();
@@ -381,7 +374,6 @@
       return;
     }
 
-    // Collect form inputs & results for email body
     const birthYear = document.getElementById("birthYear").value;
     const birthMonth = document.getElementById("birthMonth").value;
     const goal = document.getElementById("goal").value;
@@ -402,7 +394,6 @@
     window.location.href = `mailto:afdhal.advisory@gmail.com?subject=Islamic%20Investment%20Submission%20-%20${name}&body=${encodeURIComponent(body)}`;
   }
 
-  // ERROR POPUP
   function showError(message) {
     document.getElementById('contactPopup').classList.add('dimmed');
     document.getElementById('errorMsg').innerText = message;
@@ -419,25 +410,6 @@
     document.getElementById('contactPopup').classList.remove('dimmed');
     document.getElementById('contactPopup').classList.remove('hidden');
   }
-    const submitBtn = document.getElementById('submitDetails');
-
-  function checkFormValidity() {
-    const halal = document.querySelector('input[name="halal"]:checked');
-    const ready = document.querySelector('input[name="ready"]:checked');
-    const name = document.getElementById('userName').value.trim();
-    const phone = document.getElementById('userPhone').value.trim();
-    if (halal && ready && name && phone) {
-      submitBtn.disabled = false;
-    } else {
-      submitBtn.disabled = true;
-    }
-  }
-
-  document.querySelectorAll('input[name="halal"], input[name="ready"]')
-    .forEach(input => input.addEventListener('change', checkFormValidity));
-  document.getElementById('userName').addEventListener('input', checkFormValidity);
-  document.getElementById('userPhone').addEventListener('input', checkFormValidity);
-
 </script>
 </body>
 </html>
