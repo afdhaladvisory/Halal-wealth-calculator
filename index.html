@@ -43,6 +43,13 @@
       padding: 8px;
       text-align: center;
     }
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
     button {
       background: #2b3e37;
       color: white;
@@ -66,6 +73,15 @@
       display: flex;
       justify-content: space-between;
       margin: 5px 0;
+      align-items: center;
+    }
+    .result-row span {
+      background: #f0f0f0;
+      padding: 5px 10px;
+      border-radius: 4px;
+      min-width: 180px;
+      display: inline-block;
+      text-align: center;
     }
     .hidden { display: none; }
     .popup {
@@ -115,7 +131,6 @@
       z-index: 1000;
       display: none;
     }
-    /* Contact Popup */
     #contactPopup .form-row {
       flex-direction: row;
       justify-content: space-between;
@@ -125,7 +140,9 @@
       display: flex;
       gap: 20px;
     }
-    /* Dim contact form when error popup is shown */
+    .radio-group input[type="radio"] {
+      accent-color: #2b3e37;
+    }
     .dimmed {
       opacity: 0.4;
       pointer-events: none;
@@ -402,6 +419,25 @@
     document.getElementById('contactPopup').classList.remove('dimmed');
     document.getElementById('contactPopup').classList.remove('hidden');
   }
+    const submitBtn = document.getElementById('submitDetails');
+
+  function checkFormValidity() {
+    const halal = document.querySelector('input[name="halal"]:checked');
+    const ready = document.querySelector('input[name="ready"]:checked');
+    const name = document.getElementById('userName').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
+    if (halal && ready && name && phone) {
+      submitBtn.disabled = false;
+    } else {
+      submitBtn.disabled = true;
+    }
+  }
+
+  document.querySelectorAll('input[name="halal"], input[name="ready"]')
+    .forEach(input => input.addEventListener('change', checkFormValidity));
+  document.getElementById('userName').addEventListener('input', checkFormValidity);
+  document.getElementById('userPhone').addEventListener('input', checkFormValidity);
+
 </script>
 </body>
 </html>
